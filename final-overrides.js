@@ -183,21 +183,11 @@ function getHistoryBarsForPrint(result, printedId) {
 }
 
 function extractRemnantsFromBars(bars) {
-  var minLen = parseInt((document.getElementById('minRemnantLen') || {}).value, 10) || 500;
-  var spec = (document.getElementById('spec') || {}).value || '';
-  var kind = typeof getCurrentKind === 'function' ? getCurrentKind() : (window.curKind || '');
-  var rems = [];
-  (bars || []).forEach(function(bar) {
-    if (bar && bar.loss >= minLen) {
-      rems.push({
-        len: bar.loss,
-        spec: spec,
-        kind: kind,
-        sl: bar.sl || 0
-      });
-    }
-  });
-  return rems;
+  if (typeof buildRemnantsFromBars === 'function') {
+    var meta = window._lastCalcResult && window._lastCalcResult.meta ? window._lastCalcResult.meta : {};
+    return buildRemnantsFromBars(bars, meta);
+  }
+  return [];
 }
 
 function extractRemnantsFromCard(cardId) {
@@ -291,36 +281,9 @@ function buildBarsFromCardPattern(cardId) {
 }
 
 function getBarsForSelectedCard(cardId, resultData) {
-  var result = resultData || window._lastCalcResult || {};
-  var id = String(cardId || '');
-  if (id.indexOf('card_pat') === 0) {
-    var barsFromCard = buildBarsFromCardPattern(cardId);
-    if (barsFromCard.length) return barsFromCard;
+  if (typeof getSelectedBarsFromResultData === 'function') {
+    return getSelectedBarsFromResultData(resultData || window._lastCalcResult || {}, cardId);
   }
-  var labelMatch = id.match(/^card_pat_([^_]+)/);
-  var label = labelMatch ? labelMatch[1] : '';
-
-  if (label === 'B90' && result.patB && result.patB.plan90 && result.patB.plan90.bars) {
-    return result.patB.plan90.bars.map(function(b) { return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || result.patB.plan90.sl || 0 }; });
-  }
-  if (label === 'B80' && result.patB && result.patB.plan80 && result.patB.plan80.bars) {
-    return result.patB.plan80.bars.map(function(b) { return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || result.patB.plan80.sl || 0 }; });
-  }
-  if (id.indexOf('card_pat') === 0 && result.patA && result.patA.bars) {
-    return result.patA.bars.map(function(b) { return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || result.patA.sl || 0 }; });
-  }
-  if (result.allDP && result.allDP[0]) {
-    var top = result.allDP[0];
-    var barsA = (top.bA || []).map(function(b) {
-      return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || top.slA || 0 };
-    });
-    var barsB = (top.bB || []).map(function(b) {
-      return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || top.slB || 0 };
-    });
-    return barsA.concat(barsB);
-  }
-  var barsFromCard = buildBarsFromCardPattern(cardId);
-  if (barsFromCard.length) return barsFromCard;
   return getCardBarsById(cardId);
 }
 
@@ -360,10 +323,15 @@ saveCutHistory = function(resultData, cardId) {
   var entry = _baseSaveCutHistory ? _baseSaveCutHistory(resultData, cardId) : null;
   if (!entry || !entry.result) return entry;
 
-  var selectedBars = getBarsForSelectedCard(cardId, resultData);
-  var selectedRemnants = extractRemnantsFromBars(selectedBars);
+  var selectedBars = typeof getSelectedBarsFromResultData === 'function'
+    ? getSelectedBarsFromResultData(resultData, cardId)
+    : getBarsForSelectedCard(cardId, resultData);
+  var selectedRemnants = typeof extractRemnants === 'function'
+    ? extractRemnants(resultData, cardId)
+    : extractRemnantsFromBars(selectedBars);
   entry.result.remnants = selectedRemnants;
   entry.result.selectedBars = selectedBars;
+  entry.result.meta = resultData && resultData.meta ? Object.assign({}, resultData.meta) : (entry.result.meta || {});
   entry.printedCardId = cardId || entry.printedCardId || '';
   try {
     var hist = getCutHistory();
@@ -378,15 +346,21 @@ saveCutHistory = function(resultData, cardId) {
 var _baseCartAdd = typeof cartAdd === 'function' ? cartAdd : null;
 cartAdd = function(cardId, btn) {
   var result = _baseCartAdd ? _baseCartAdd(cardId, btn) : undefined;
-  var selectedBars = getBarsForSelectedCard(cardId, window._lastCalcResult);
-  var rems = extractRemnantsFromBars(selectedBars);
-  if (rems.length && typeof getCart === 'function' && typeof saveCart === 'function') {
+  var selectedBars = typeof getSelectedBarsFromResultData === 'function'
+    ? getSelectedBarsFromResultData(window._lastCalcResult, cardId)
+    : getBarsForSelectedCard(cardId, window._lastCalcResult);
+  var rems = typeof extractRemnants === 'function'
+    ? extractRemnants(window._lastCalcResult, cardId)
+    : extractRemnantsFromBars(selectedBars);
+  if (typeof getCart === 'function' && typeof saveCart === 'function') {
     var remHtml = buildRemHtmlFromRemnants(rems);
     var cart = getCart();
     for (var i = cart.length - 1; i >= 0; i--) {
       if (cart[i] && cart[i].cardId === cardId && cart[i].data) {
         cart[i].data.remHtml = remHtml;
         cart[i].data.bars = selectedBars;
+        cart[i].data.remnants = rems;
+        cart[i].data.resultMeta = window._lastCalcResult && window._lastCalcResult.meta ? Object.assign({}, window._lastCalcResult.meta) : {};
         break;
       }
     }
@@ -455,6 +429,7 @@ autoRegisterAfterPrint = function() {
   var cardId = window._lastPrintedCardId;
   if (!cardId || typeof registerRemnants !== 'function') return;
   var rems = getLatestPrintedHistoryRemnants(cardId);
+  if (!rems.length && typeof extractRemnants === 'function') rems = extractRemnants(window._lastCalcResult, cardId);
   if (!rems.length) rems = extractRemnantsFromBars(getBarsForSelectedCard(cardId, window._lastCalcResult));
   if (!rems.length) return;
   var signature = buildRemnantSignature(cardId, rems);
@@ -474,7 +449,9 @@ cartDoPrint = function() {
   cartSnapshot.forEach(function(item) {
     var data = item && item.data ? item.data : {};
     var bars = Array.isArray(data.bars) && data.bars.length ? data.bars : getBarsForSelectedCard(data.cardId || item.cardId, window._lastCalcResult);
-    var rems = extractRemnantsFromBars(bars);
+    var rems = Array.isArray(data.remnants) && data.remnants.length ? data.remnants.slice() : [];
+    if (!rems.length && typeof extractRemnants === 'function') rems = extractRemnants(window._lastCalcResult, data.cardId || item.cardId);
+    if (!rems.length) rems = extractRemnantsFromBars(bars);
     if (!rems.length) return;
     allRems = allRems.concat(rems);
     sigParts.push(buildRemnantSignature(data.cardId || item.cardId, rems));
@@ -530,33 +507,16 @@ function renderCardRemnantSection(card, rems) {
     }
     dup = next;
   }
-  var sourceRems = extractRemnantsFromCardSection(section);
-  var finalRems = sourceRems.length ? sourceRems : rems;
   section.innerHTML =
     '<div style="font-size:10px;color:#8888a8;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">端材リスト</div>' +
-    (finalRems.length ? buildRemHtmlFromRemnants(finalRems) : '<div class="rem-list"><span class="rem-pill rem-pill-empty">なし</span></div>');
-}
-
-function extractRemnantsFromCardSection(section) {
-  if (!section) return [];
-  var spec = (document.getElementById('spec') || {}).value || '';
-  var kind = typeof getCurrentKind === 'function' ? getCurrentKind() : (window.curKind || '');
-  var text = String(section.textContent || '').replace(/\s+/g, ' ');
-  var regex = /([\d,]+)\s*mm(?:\s*[x×*]\s*(\d+))?/gi;
-  var rems = [];
-  var match;
-  while ((match = regex.exec(text))) {
-    var len = parseInt(match[1].replace(/,/g, ''), 10) || 0;
-    var qty = Math.max(1, parseInt(match[2], 10) || 1);
-    if (!len) continue;
-    rems.push({ len: len, qty: qty, spec: spec, kind: kind, sl: 0 });
-  }
-  return rems;
+    (rems.length ? buildRemHtmlFromRemnants(rems) : '<div class="rem-list"><span class="rem-pill rem-pill-empty">なし</span></div>');
 }
 
 function hydrateCardRemnantLists() {
   document.querySelectorAll('.cc[id]').forEach(function(card) {
-    var rems = extractRemnantsFromBars(getBarsForSelectedCard(card.id, window._lastCalcResult));
+    var rems = typeof extractRemnants === 'function'
+      ? extractRemnants(window._lastCalcResult, card.id)
+      : extractRemnantsFromBars(getBarsForSelectedCard(card.id, window._lastCalcResult));
     renderCardRemnantSection(card, rems);
   });
 }

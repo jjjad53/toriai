@@ -885,7 +885,22 @@ function doCalc() {
   render(single, top3, chgPlans, endLoss, remnantResult.remnantBars, kgm, allDP, calcPieces, bundlePlan, patA, patB, patC, yieldCard1, yieldCard2);
 
   // グローバル変数に保存（印刷・切断完了ボタン用）
-  _lastCalcResult = {allDP:allDP, patA:patA, patB:patB, patC:patC};
+  _lastCalcResult = {
+    allDP: allDP,
+    patA: patA,
+    patB: patB,
+    patC: patC,
+    meta: {
+      calcId: 'calc_' + Date.now(),
+      spec: (document.getElementById('spec') || {}).value || '',
+      kind: (typeof getCurrentKind === 'function' ? getCurrentKind() : (typeof curKind !== 'undefined' ? curKind : '')) || '',
+      minRemnantLen: parseInt((document.getElementById('minRemnantLen') || {}).value, 10) || 500,
+      blade: blade,
+      endLoss: endLoss,
+      job: typeof getJobInfo === 'function' ? getJobInfo() : {},
+      stocks: (stocks || []).map(function(stock) { return { sl: stock.sl, max: stock.max }; })
+    }
+  };
   _lastAllDP = allDP || [];
   _lastPatA = patA;
   _lastPatB = patB;
@@ -933,6 +948,16 @@ function applyWorkerResults(results, stocks, minValidLen, endLoss, kgm) {
   var patA = results.patA ? results.patA.patA : null;
   var patB = results.patB ? results.patB.patB : null;
   var patC = null;
+  var meta = {
+    calcId: 'calc_' + Date.now(),
+    spec: (document.getElementById('spec') || {}).value || '',
+    kind: (typeof getCurrentKind === 'function' ? getCurrentKind() : (typeof curKind !== 'undefined' ? curKind : '')) || '',
+    minRemnantLen: minValidLen,
+    blade: parseInt((document.getElementById('blade') || {}).value, 10) || 3,
+    endLoss: endLoss,
+    job: typeof getJobInfo === 'function' ? getJobInfo() : {},
+    stocks: (stocks || []).map(function(stock) { return { sl: stock.sl, max: stock.max }; })
+  };
   var remBars = ry.remnantBars || [];
   if (remBars.length) {
     function mergeRemnants(pat) {
@@ -950,7 +975,7 @@ function applyWorkerResults(results, stocks, minValidLen, endLoss, kgm) {
   render(ry.single || [], [], ry.chgPlans || [], endLoss, remBars, kgm,
     ry.allDP || [], ry.calcPieces || [], ry.bundlePlan || null,
     patA, patB, patC, ry.yieldCard1 || null, null);
-  _lastCalcResult = { allDP: ry.allDP, patA: patA, patC: patC };
+  _lastCalcResult = { allDP: ry.allDP, patA: patA, patB: patB, patC: patC, meta: meta };
   _lastAllDP = ry.allDP || [];
   _lastPatA = patA;
   _lastPatB = patB;

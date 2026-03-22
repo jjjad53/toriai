@@ -627,6 +627,8 @@ function saveCutHistory(resultData, cardId) {
   var job = getJobInfo();
   var zones = getZoneInfo();
   var hist = getCutHistory();
+  var resultMeta = buildResultMeta(resultData);
+  var selectedBars = getSelectedBarsFromResultData(resultData, cardId);
   var entry = {
     id: Date.now(),
     date: new Date().toISOString(),
@@ -662,7 +664,9 @@ function saveCutHistory(resultData, cardId) {
           bars: resultData.patB.plan80.bars ? resultData.patB.plan80.bars.map(function(b){return{pat:b.pat,loss:b.loss,sl:b.sl};}) : []
         } : null
       } : null,
-      remnants: extractRemnants(resultData, cardId),
+      meta: resultMeta,
+      selectedBars: selectedBars,
+      remnants: buildRemnantsFromBars(selectedBars, resultMeta),
       blade: parseInt((document.getElementById('blade')||{}).value)||3,
       endLoss: parseInt((document.getElementById('endloss')||{}).value)||150
     }
@@ -685,23 +689,78 @@ function getCutHistory() {
   try { var r=localStorage.getItem(LS_CUT_HIST); return r?JSON.parse(r):[]; } catch(e){return [];}
 }
 
+function buildResultMeta(resultData) {
+  var meta = resultData && resultData.meta ? Object.assign({}, resultData.meta) : {};
+  if (!meta.spec) meta.spec = (document.getElementById('spec') || {}).value || '';
+  if (!meta.kind) meta.kind = (typeof getCurrentKind === 'function' ? getCurrentKind() : (typeof curKind !== 'undefined' ? curKind : '')) || '';
+  if (!meta.minRemnantLen) meta.minRemnantLen = parseInt((document.getElementById('minRemnantLen') || {}).value, 10) || 500;
+  if (!meta.blade) meta.blade = parseInt((document.getElementById('blade') || {}).value, 10) || 3;
+  if (!meta.endLoss) meta.endLoss = parseInt((document.getElementById('endloss') || {}).value, 10) || 150;
+  if (!meta.job && typeof getJobInfo === 'function') meta.job = getJobInfo();
+  return meta;
+}
+
+function cloneBarsForCard(bars, fallbackSl) {
+  return (bars || []).map(function(bar) {
+    return {
+      pat: (bar.pat || []).slice(),
+      loss: bar.loss || 0,
+      sl: bar.sl || fallbackSl || 0
+    };
+  });
+}
+
+function getSelectedBarsFromResultData(resultData, cardId) {
+  var result = resultData && resultData.result ? resultData.result : (resultData || {});
+  var id = String(cardId || result.printedCardId || '');
+  if (result.selectedBars && result.selectedBars.length) {
+    return cloneBarsForCard(result.selectedBars, 0);
+  }
+
+  var yieldMatch = id.match(/^card_yield_(\d+)/);
+  if (yieldMatch && result.allDP && result.allDP[parseInt(yieldMatch[1], 10)]) {
+    var yieldCard = result.allDP[parseInt(yieldMatch[1], 10)];
+    return cloneBarsForCard(yieldCard.bA || [], yieldCard.slA).concat(cloneBarsForCard(yieldCard.bB || [], yieldCard.slB));
+  }
+
+  var patMatch = id.match(/^card_pat_([^_]+)/);
+  var label = patMatch ? patMatch[1] : '';
+  if (label === 'B90' && result.patB && result.patB.plan90) {
+    return cloneBarsForCard(result.patB.plan90.bars || [], result.patB.plan90.sl);
+  }
+  if (label === 'B80' && result.patB && result.patB.plan80) {
+    return cloneBarsForCard(result.patB.plan80.bars || [], result.patB.plan80.sl);
+  }
+  if (id.indexOf('card_pat') === 0 && result.patA) {
+    return cloneBarsForCard(result.patA.bars || [], result.patA.sl);
+  }
+  if (result.allDP && result.allDP[0]) {
+    return cloneBarsForCard(result.allDP[0].bA || [], result.allDP[0].slA).concat(cloneBarsForCard(result.allDP[0].bB || [], result.allDP[0].slB));
+  }
+  return [];
+}
+
+function buildRemnantsFromBars(bars, meta) {
+  var context = buildResultMeta({ meta: meta || {} });
+  var minLen = parseInt(context.minRemnantLen, 10) || 500;
+  var rems = [];
+  (bars || []).forEach(function(bar) {
+    if (!bar || bar.loss < minLen) return;
+    rems.push({
+      len: bar.loss,
+      spec: context.spec || '',
+      kind: context.kind || '',
+      sl: bar.sl || 0,
+      qty: 1
+    });
+  });
+  return rems;
+}
+
 // ── 計算結果から端材リストを抽出 ──
 function extractRemnants(resultData, cardId) {
-  var minLen = parseInt((document.getElementById('minRemnantLen')||{}).value)||500;
-  var rems = [];
-  var spec = (document.getElementById('spec')||{}).value||'';
-  var kind = curKind||'';
-  function processBar(bar, sl) {
-    if (bar.loss >= minLen) rems.push({ len: bar.loss, spec: spec, kind: kind, sl: sl });
-  }
-  // cardId で印刷したプランを判定
-  var isPat = cardId && cardId.indexOf('card_pat') === 0;
-  if (isPat && resultData.patA && resultData.patA.bars) {
-    resultData.patA.bars.forEach(function(b){ processBar(b, resultData.patA.sl); });
-  } else if (resultData.allDP && resultData.allDP[0] && resultData.allDP[0].bA) {
-    resultData.allDP[0].bA.forEach(function(b){ processBar(b, resultData.allDP[0].slA); });
-  }
-  return rems;
+  var result = resultData && resultData.result ? resultData.result : (resultData || {});
+  return buildRemnantsFromBars(getSelectedBarsFromResultData(result, cardId), buildResultMeta(result));
 }
 
 // ── 残材在庫 ──
@@ -716,8 +775,11 @@ function saveInventory(inv) {
 // 残材を在庫に登録（計算後ボタン）
 function registerRemnants(rems) {
   var inv = getInventory();
-  var job = getJobInfo();
+  var fallbackJob = typeof getJobInfo === 'function' ? getJobInfo() : {};
   rems.forEach(function(r) {
+    var qty = Math.max(1, parseInt(r && r.qty, 10) || 1);
+    var job = r && r.job ? r.job : fallbackJob;
+    for (var i = 0; i < qty; i++) {
     inv.push({
       id: Date.now() + Math.random(),
       len: r.len,
@@ -727,6 +789,7 @@ function registerRemnants(rems) {
       note: job.memo || '',
       addedDate: new Date().toLocaleDateString('ja-JP')
     });
+    }
   });
   saveInventory(inv);
   syncInventoryToRemnants();
