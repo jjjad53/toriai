@@ -177,6 +177,73 @@ function getHistoryBarsForPrint(result, printedId) {
   return [];
 }
 
+function extractRemnantsFromBars(bars) {
+  var minLen = parseInt((document.getElementById('minRemnantLen') || {}).value, 10) || 500;
+  var spec = (document.getElementById('spec') || {}).value || '';
+  var kind = typeof getCurrentKind === 'function' ? getCurrentKind() : (window.curKind || '');
+  var rems = [];
+  (bars || []).forEach(function(bar) {
+    if (bar && bar.loss >= minLen) {
+      rems.push({
+        len: bar.loss,
+        spec: spec,
+        kind: kind,
+        sl: bar.sl || 0
+      });
+    }
+  });
+  return rems;
+}
+
+function getCardBarsById(cardId) {
+  var card = document.getElementById(cardId);
+  if (!card) return [];
+  var diagHtml = '';
+  card.querySelectorAll('[id^="diag_"]').forEach(function(diag) {
+    diagHtml += diag.innerHTML || '';
+  });
+  if (!diagHtml) return [];
+  var endLoss = parseInt(((document.getElementById('endloss') || {}).value), 10) || 150;
+  return parseBarsFromDiagHtml(diagHtml, 0, endLoss);
+}
+
+var _baseSaveCutHistory = typeof saveCutHistory === 'function' ? saveCutHistory : null;
+saveCutHistory = function(resultData, cardId) {
+  var entry = _baseSaveCutHistory ? _baseSaveCutHistory(resultData, cardId) : null;
+  if (!entry || !entry.result) return entry;
+
+  var selectedBars = getCardBarsById(cardId);
+  if (selectedBars.length) {
+    entry.result.remnants = extractRemnantsFromBars(selectedBars);
+    entry.printedCardId = cardId || entry.printedCardId || '';
+    try {
+      var hist = getCutHistory();
+      if (hist.length) {
+        hist[0] = entry;
+        localStorage.setItem(LS_CUT_HIST, JSON.stringify(hist));
+      }
+    } catch (e) {}
+  }
+  return entry;
+};
+
+var _baseCartAdd = typeof cartAdd === 'function' ? cartAdd : null;
+cartAdd = function(cardId, btn) {
+  var result = _baseCartAdd ? _baseCartAdd(cardId, btn) : undefined;
+  var bars = getCardBarsById(cardId);
+  var rems = extractRemnantsFromBars(bars);
+  if (rems.length && typeof registerRemnants === 'function') {
+    var signature = JSON.stringify(rems.map(function(item) {
+      return [item.spec, item.kind, item.sl, item.len];
+    }).sort());
+    if (window._lastRegisteredRemnantSignature !== signature) {
+      window._lastRegisteredRemnantSignature = signature;
+      registerRemnants(rems);
+    }
+  }
+  return result;
+};
+
 showHistPreview = function(id) {
   var hist = getCutHistory();
   var h = hist.find(function(x) { return x.id === id; });
@@ -209,7 +276,7 @@ showHistPreview = function(id) {
       sumMap[len] = (sumMap[len] || 0) + 1;
     });
   });
-  var remTags = (h.remnants || []).filter(function(r2) { return r2.len >= 500; }).map(function(r2) {
+  var remTags = ((r.remnants || h.remnants) || []).filter(function(r2) { return r2.len >= 500; }).map(function(r2) {
     return r2.len.toLocaleString() + 'mm' + (r2.qty > 1 ? ' x ' + r2.qty : '');
   });
   var barHtml = '';
