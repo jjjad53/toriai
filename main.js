@@ -79,11 +79,17 @@ function init() {
     d.innerHTML =
       '<input type="checkbox" id="sc' + i + '" checked onchange="togStk(' + i + ');saveSettings()">' +
       '<span class="stk-nm">' + len.toLocaleString() + '</span>' +
-      '<input type="number" class="stk-mx" id="sm' + i + '" placeholder="∞" min="1" onchange="stkValChange(' + i + ')">';
-    // 行全体クリックでチェック切り替え（上限入力欄クリックは除く）
+      '<div style="display:flex;align-items:center;gap:2px">' +
+        '<button onclick="stkDown(' + i + ')" style="width:18px;height:18px;border:1px solid #d4d4dc;background:#fff;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0">▼</button>' +
+        '<span id="sm_lbl' + i + '" onclick="stkEdit(' + i + ')" style="min-width:22px;text-align:center;font-size:11px;font-weight:600;color:#1a1a2e;cursor:pointer" title="クリックで直接入力">∞</span>' +
+        '<input type="number" class="stk-mx" id="sm' + i + '" placeholder="∞" min="1" onchange="stkInputChange(' + i + ')" style="display:none;width:36px">' +
+        '<button onclick="stkUp(' + i + ')" style="width:18px;height:18px;border:1px solid #d4d4dc;background:#fff;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0">▲</button>' +
+      '</div>';
     d.addEventListener('click', function(e) {
       if (e.target.tagName === 'INPUT' && e.target.type === 'number') return;
       if (e.target.tagName === 'INPUT' && e.target.type === 'checkbox') return;
+      if (e.target.tagName === 'BUTTON') return;
+      if (e.target.tagName === 'SPAN' && e.target.id && e.target.id.indexOf('sm_lbl') === 0) return;
       document.getElementById('sc' + i).click();
     });
     sl.appendChild(d);
@@ -449,41 +455,43 @@ function getRemnants() {
 }
 
 // ── 在庫と手持ち残材を完全同期 ──
-// 在庫に登録されている残材を全て手持ち残材リストに反映する
 function syncInventoryToRemnants() {
   var inv = getInventory();
   var list = document.getElementById('remnantList');
   if (!list) return;
 
-  // 既存の残材行を全削除
   list.innerHTML = '';
   remnantCount = 0;
 
   if (!inv.length) {
-    // 在庫がなければ空欄を1行だけ表示
     addRemnant();
     return;
   }
 
-  // 在庫の残材をそのまま残材リストに展開
   inv.forEach(function(item) {
     var i = remnantCount++;
     var d = document.createElement('div');
     d.className = 'rem-row';
     d.id = 'remRow' + i;
+    // 使用本数の最大は登録本数（デフォルト1）
+    var maxQty = item.qty || 1;
     d.innerHTML =
       '<span class="rem-label">長さ</span>' +
       '<input type="number" id="remLen' + i + '" value="' + item.len + '" min="1" style="flex:1" readonly ' +
         'onchange="saveRemnants()">' +
-      '<span class="rem-label">本数</span>' +
-      '<input type="number" id="remQty' + i + '" value="1" min="1" style="width:44px" ' +
-        'onchange="saveRemnants()">' +
-      '<span style="font-size:10px;color:#8888a8;white-space:nowrap;max-width:60px;overflow:hidden;text-overflow:ellipsis" title="' + (item.spec||'') + '">' + (item.spec||'') + '</span>' +
+      '<span class="rem-label">使用</span>' +
+      '<select id="remQty' + i + '" style="width:52px;font-size:11px;padding:3px 4px;border:1px solid #d4d4dc;border-radius:6px;background:#fff;color:#1a1a2e" onchange="saveRemnants()">' +
+        (function(){
+          var opts = '<option value="0">0本</option>';
+          for(var q=1;q<=maxQty;q++) opts += '<option value="'+q+'"'+(q===1?' selected':'')+'>'+q+'本</option>';
+          return opts;
+        })() +
+      '</select>' +
+      '<span style="font-size:10px;color:#8888a8;white-space:nowrap">/ ' + maxQty + '本</span>' +
       '<button class="rem-del" onclick="removeFromInventoryAndRemnant(' + item.id + ')">✕</button>';
     list.appendChild(d);
   });
 
-  // 残材セクションを展開
   var rb = document.getElementById('remnantBody');
   if (rb && rb.style.display === 'none' && inv.length > 0) {
     toggleSection('remnantBody', 'remnantToggleBtn', '');
@@ -722,10 +730,32 @@ function renderHistory() {
   if (fs)  hist = hist.filter(function(h){ return (h.spec  ||'') === fs; });
   if (fk)  hist = hist.filter(function(h){ return (h.kind  ||'') === fk; });
 
+  // 新しい順にソート
+  hist.sort(function(a, b) {
+    var da = a.date ? new Date(a.date).getTime() : 0;
+    var db = b.date ? new Date(b.date).getTime() : 0;
+    return db - da;
+  });
+
   if (!hist.length) {
     cont.innerHTML=''; if(empty)empty.style.display='block'; return;
   }
   if(empty) empty.style.display='none';
+
+  // 日付ラベルをGoogle風に変換
+  function friendlyDate(isoStr) {
+    if (!isoStr) return '';
+    var d = new Date(isoStr);
+    if (isNaN(d.getTime())) return isoStr;
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var diff = (today - target) / (1000 * 60 * 60 * 24);
+    if (diff === 0) return '今日';
+    if (diff === 1) return '昨日';
+    if (diff < 7) return Math.floor(diff) + '日前';
+    return (d.getMonth()+1) + '月' + d.getDate() + '日';
+  }
 
   // 規格グループ別に表示
   var groups = {};
@@ -747,16 +777,7 @@ function renderHistory() {
       remSizes = Object.keys(remCnt).map(Number).sort(function(a,b){return b-a;})
         .map(function(l){ return l.toLocaleString()+'mm'+(remCnt[l]>1?' ×'+remCnt[l]:''); }).join('　');
     }
-    var rems = h.result && h.result.remnants ? h.result.remnants : [];
-    var topDP = h.result && h.result.allDP && h.result.allDP[0] ? h.result.allDP[0].desc : '—';
-    // 端材サイズリスト（実サイズ表示）
-    var remSizes = '';
-    if (rems.length) {
-      var remCnt = {};
-      rems.forEach(function(r){ remCnt[r.len]=(remCnt[r.len]||0)+1; });
-      remSizes = Object.keys(remCnt).map(Number).sort(function(a,b){return b-a;})
-        .map(function(l){ return l.toLocaleString()+'mm'+(remCnt[l]>1?' ×'+remCnt[l]:''); }).join('　');
-    }
+    var dateLabel = friendlyDate(h.date);
     return '<div class="hist-row" onclick="showHistPreview('+h.id+')">'+
       '<div class="hist-row-main">'+
         '<div style="margin-bottom:3px">'+
@@ -765,7 +786,7 @@ function renderHistory() {
           (h.deadline?'<span style="font-size:10px;background:rgba(251,191,36,.15);color:var(--am);padding:1px 8px;border-radius:20px;margin-left:6px">'+h.deadline+'</span>':'')+
         '</div>'+
         '<div class="hist-meta">'+
-          '<span class="hist-date">'+h.dateLabel+'</span>'+
+          '<span class="hist-date">'+dateLabel+'</span>'+
           (h.spec?'<span class="hist-spec-badge">'+h.spec+'</span>':'')+
           (topDP&&topDP!=='—'?'<span class="hist-desc">'+topDP+'</span>':'')+
           (remSizes?'<span class="hist-rem">端材: '+remSizes+'</span>':'')+
@@ -1308,9 +1329,9 @@ function render(single, top3, chgPlans, endLoss, remnantBars, kgm, allDP, origPi
       var yDiagId2 = 'diag_yield_' + yi;
       var yCardId2 = 'card_yield_' + yi;
       var barCount = allBarsY.length;
-      return '<div class="cc" id="' + yCardId2 + '" style="border:2px solid var(--br)">' +
+      return '<div class="cc" id="' + yCardId2 + '" style="border:1.5px solid #d4d4dc">' +
         '<div class="cc-hd">' +
-          '<div class="cc-desc" style="color:var(--br)">' + yb.desc +
+          '<div class="cc-desc" style="color:#1a1a2e">' + yb.desc +
             (remnantBars && remnantBars.length ? '<span style="margin-left:8px;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(34,211,238,.18);border:1px solid var(--cy);color:var(--cy);vertical-align:middle">残材消費</span>' : '') +
           '</div>' +
           '<div class="cc-stats" style="margin-left:auto">' +
@@ -1476,9 +1497,9 @@ function render(single, top3, chgPlans, endLoss, remnantBars, kgm, allDP, origPi
       var slSummary = Object.keys(slGroupsCard).sort(function(a,b){return b-a;}).map(function(sl){
         return parseInt(sl).toLocaleString() + 'mm × ' + slGroupsCard[sl].length;
       }).join(' + ');
-      return '<div class="cc" id="' + cardId2 + '" style="border:2px solid var(--br)">' +
+      return '<div class="cc" id="' + cardId2 + '" style="border:1.5px solid #d4d4dc">' +
         '<div class="cc-hd">' +
-          '<div class="cc-desc" style="color:var(--br)">' + slSummary +
+          '<div class="cc-desc" style="color:#1a1a2e">' + slSummary +
             (cfg.sub ? '<span style="margin-left:8px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:#f0f0f4;color:#5a5a78;vertical-align:middle">' + cfg.sub + '</span>' : '') +
             (remnantBars && remnantBars.length ? '<span style="margin-left:6px;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(34,211,238,.18);border:1px solid var(--cy);color:var(--cy);vertical-align:middle">残材消費</span>' : '') +
           '</div>' +
