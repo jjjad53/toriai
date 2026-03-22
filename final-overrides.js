@@ -170,9 +170,14 @@ function getHistoryBarsForPrint(result, printedId) {
     return result.patA.bars.slice();
   }
   if (result.allDP && result.allDP[0]) {
-    return (result.allDP[0].bA || []).concat(result.allDP[0].bB || []).map(function(b) {
-      return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || result.allDP[0].slA || 0 };
+    var top = result.allDP[0];
+    var barsA = (top.bA || []).map(function(b) {
+      return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || top.slA || 0 };
     });
+    var barsB = (top.bB || []).map(function(b) {
+      return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || top.slB || 0 };
+    });
+    return barsA.concat(barsB);
   }
   return [];
 }
@@ -305,9 +310,14 @@ function getBarsForSelectedCard(cardId, resultData) {
     return result.patA.bars.map(function(b) { return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || result.patA.sl || 0 }; });
   }
   if (result.allDP && result.allDP[0]) {
-    return (result.allDP[0].bA || []).concat(result.allDP[0].bB || []).map(function(b) {
-      return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || result.allDP[0].slA || 0 };
+    var top = result.allDP[0];
+    var barsA = (top.bA || []).map(function(b) {
+      return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || top.slA || 0 };
     });
+    var barsB = (top.bB || []).map(function(b) {
+      return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || top.slB || 0 };
+    });
+    return barsA.concat(barsB);
   }
   var barsFromCard = buildBarsFromCardPattern(cardId);
   if (barsFromCard.length) return barsFromCard;
@@ -479,21 +489,7 @@ cartDoPrint = function() {
 };
 
 function hydrateYieldRemnantLists() {
-  document.querySelectorAll('.cc[id^="card_yield_"]').forEach(function(card) {
-    if (card.querySelector('.rem-section')) return;
-    var rems = extractRemnantsFromBars(getBarsForSelectedCard(card.id, window._lastCalcResult));
-    var section = document.createElement('div');
-    section.className = 'rem-section';
-    section.style.cssText = 'padding:6px 14px;background:#f8f8fb;border-top:1px solid #e8e8ed';
-    section.innerHTML =
-      '<div style="font-size:10px;color:#8888a8;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">端材リスト</div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:2px">' +
-      (rems.length ? buildRemHtmlFromRemnants(rems).replace('<div class="rem-list">', '').replace('</div>', '') : '<span style="font-size:11px;color:#8888a8">なし</span>') +
-      '</div>';
-    var pat = card.querySelector('.cc-pat');
-    if (pat && pat.parentNode === card) pat.insertAdjacentElement('afterend', section);
-    else card.appendChild(section);
-  });
+  return;
 }
 
 var _baseRender = typeof render === 'function' ? render : null;
@@ -505,14 +501,34 @@ render = function() {
 
 function renderCardRemnantSection(card, rems) {
   if (!card) return;
+  var pat = card.querySelector('.cc-pat');
   var section = card.querySelector('.rem-section');
+  if (!section && pat) {
+    var probe = pat.nextElementSibling;
+    while (probe) {
+      if (probe.classList && probe.classList.contains('diag-toggle')) break;
+      if (((probe.textContent || '').indexOf('端材リスト') >= 0) || (probe.classList && probe.classList.contains('rem-list'))) {
+        section = probe;
+        break;
+      }
+      probe = probe.nextElementSibling;
+    }
+  }
   if (!section) {
     section = document.createElement('div');
     section.className = 'rem-section';
     section.style.cssText = 'padding:6px 14px;background:#f8f8fb;border-top:1px solid #e8e8ed';
-    var pat = card.querySelector('.cc-pat');
     if (pat && pat.parentNode === card) pat.insertAdjacentElement('afterend', section);
     else card.appendChild(section);
+  }
+  section.classList.add('rem-section');
+  var dup = section.nextElementSibling;
+  while (dup && !(dup.classList && dup.classList.contains('diag-toggle'))) {
+    var next = dup.nextElementSibling;
+    if ((dup.textContent || '').indexOf('端材リスト') >= 0 || (dup.classList && dup.classList.contains('rem-section'))) {
+      dup.remove();
+    }
+    dup = next;
   }
   section.innerHTML =
     '<div style="font-size:10px;color:#8888a8;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">端材リスト</div>' +
