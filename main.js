@@ -3374,6 +3374,168 @@ function getRemnants() {
   return result;
 }
 
+(function applyFinalRemnantUiOverrides() {
+  var remnantState = null;
+
+  function stateLoad() {
+    if (remnantState) return remnantState;
+    try {
+      var parsed = JSON.parse(localStorage.getItem(INVENTORY_REMNANT_SELECTED_KEY) || '{}');
+      remnantState = parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (e) {
+      remnantState = {};
+    }
+    return remnantState;
+  }
+
+  function stateSave() {
+    try {
+      localStorage.setItem(INVENTORY_REMNANT_SELECTED_KEY, JSON.stringify(remnantState || {}));
+    } catch (e) {}
+  }
+
+  function keyOf(item) {
+    return item && item.ids ? item.ids.slice().sort(function(a, b) { return a - b; }).join('_') : '';
+  }
+
+  updateInventoryUseButton = function() {
+    var btn = document.getElementById('invUseBtn');
+    var sel = document.getElementById('invSelect');
+    if (!btn) return;
+    btn.textContent = '追加';
+    btn.style.background = '#fff';
+    btn.style.color = '#16a34a';
+    btn.disabled = !(sel && sel.value);
+  };
+
+  buildInventoryDropdown = function() {
+    var cont = document.getElementById('invDropCont');
+    if (!cont) return;
+    var items = getInventoryForCurrentSpec();
+    cont.style.display = items.length ? 'block' : 'none';
+    var badge = document.getElementById('invBadge');
+    if (badge) badge.textContent = '在庫 ' + items.reduce(function(sum, item) { return sum + item.qty; }, 0) + '本';
+    var sel = document.getElementById('invSelect');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">在庫から使いたい残材を選択</option>';
+    items.forEach(function(item) {
+      var option = document.createElement('option');
+      option.value = keyOf(item);
+      option.textContent = item.len.toLocaleString() + 'mm / 在庫' + item.qty + '本' + (item.company ? ' [' + item.company + ']' : '');
+      sel.appendChild(option);
+    });
+    updateInventoryUseButton();
+  };
+
+  addFromInventory = function() {
+    var sel = document.getElementById('invSelect');
+    if (!sel || !sel.value) return;
+    var items = getInventoryForCurrentSpec();
+    var chosen = items.find(function(item) { return keyOf(item) === sel.value; });
+    if (!chosen) return;
+    var state = stateLoad();
+    state[keyOf(chosen)] = { qty: 1 };
+    remnantState = state;
+    stateSave();
+    sel.value = '';
+    syncInventoryToRemnants();
+    updateInventoryUseButton();
+  };
+
+  saveRemnants = function() {
+    var next = {};
+    document.querySelectorAll('#remnantList .rem-row[data-source="inventory"]').forEach(function(row) {
+      var qtyEl = row.querySelector('.rem-qty');
+      var maxQty = Math.max(1, parseInt(row.dataset.maxQty || '1', 10));
+      next[row.dataset.inventoryKey] = {
+        qty: Math.max(1, Math.min(maxQty, parseInt(qtyEl && qtyEl.value, 10) || 1))
+      };
+    });
+    remnantState = next;
+    stateSave();
+  };
+
+  removeRemnant = function(i) {
+    var row = document.getElementById('remRow' + i);
+    if (!row) return;
+    var state = stateLoad();
+    delete state[row.dataset.inventoryKey];
+    remnantState = state;
+    stateSave();
+    syncInventoryToRemnants();
+    updateInventoryUseButton();
+  };
+
+  syncInventoryToRemnants = function() {
+    var list = document.getElementById('remnantList');
+    if (!list) return;
+    var grouped = getInventoryForCurrentSpec();
+    var state = stateLoad();
+    list.innerHTML = '';
+    remnantCount = 0;
+    Object.keys(state).forEach(function(key) {
+      var item = grouped.find(function(group) { return keyOf(group) === key; });
+      if (!item) return;
+      var i = remnantCount++;
+      var usage = Math.max(1, Math.min(item.qty || 1, (state[key] || {}).qty || 1));
+      var row = document.createElement('div');
+      row.className = 'rem-row';
+      row.id = 'remRow' + i;
+      row.dataset.source = 'inventory';
+      row.dataset.inventoryKey = key;
+      row.dataset.maxQty = String(item.qty || 1);
+      row.innerHTML =
+        '<div class="rem-label-group"><span class="rem-label-title">' + Number(item.len || 0).toLocaleString() + 'mm</span><span class="rem-label-sub">在庫 ' + (item.qty || 1) + '本</span></div>' +
+        '<input type="number" class="rem-qty" id="remQty' + i + '" min="1" max="' + (item.qty || 1) + '" value="' + usage + '" oninput="saveRemnants()">' +
+        '<div class="rem-meta">今回使う本数 / ' + escapeHtml(item.company || item.label || '在庫から選択') + '</div>' +
+        '<button type="button" class="rem-del" onclick="removeRemnant(' + i + ')">×</button>';
+      list.appendChild(row);
+    });
+    if (!list.children.length) {
+      list.innerHTML = '<div class="rem-row rem-row-empty"><div class="rem-meta">在庫から追加した残材がここに表示されます</div></div>';
+    }
+  };
+
+  getRemnants = function() {
+    var result = [];
+    document.querySelectorAll('#remnantList .rem-row[data-source="inventory"]').forEach(function(row) {
+      var qtyEl = row.querySelector('.rem-qty');
+      var title = row.querySelector('.rem-label-title');
+      var len = parseInt((title && title.textContent || '').replace(/[^\d]/g, ''), 10);
+      var qty = Math.max(0, parseInt(qtyEl && qtyEl.value, 10) || 0);
+      if (!len || !qty) return;
+      for (var i = 0; i < qty; i++) result.push(len);
+    });
+    return result;
+  };
+
+  renderCartModal = function() {
+    var cart = getCart();
+    var body = document.getElementById('cartModalBody');
+    if (!body) return;
+    if (!cart.length) {
+      body.innerHTML = '<div style="padding:32px;text-align:center;color:#aaa;font-size:13px">カートは空です。作業指示書に追加した項目がここに表示されます。</div>';
+      return;
+    }
+    body.innerHTML = cart.map(function(item) {
+      var d = item.data;
+      return '<div class="cart-item">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:2px">' + (d.title || '') + '</div>' +
+          '<div style="font-size:11px;color:#8888a8">' + (d.spec || '') + ' ' + ((d.job || {}).client || '') + ' ' + ((d.job || {}).name || '') + '</div>' +
+        '</div>' +
+        '<button class="cart-item-del" onclick="cartRemoveItem(\'' + item.id + '\')">削除</button>' +
+      '</div>';
+    }).join('');
+  };
+
+  if (document.readyState !== 'loading') {
+    buildInventoryDropdown();
+    syncInventoryToRemnants();
+    updateInventoryUseButton();
+  }
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(function() {
     normalizeInterfaceChrome();
