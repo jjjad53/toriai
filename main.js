@@ -3233,6 +3233,47 @@ function getRemnants() {
   return result;
 }
 
+(function hardReplaceRemnantUi() {
+  function renderRemnantSectionShell() {
+    var body = document.getElementById('remnantBody');
+    if (!body) return;
+    body.innerHTML =
+      '<div id="invDropCont" class="remnant-picker-shell">' +
+        '<div class="remnant-picker-top">' +
+          '<span id="invBadge" class="remnant-badge">在庫 0本</span>' +
+        '</div>' +
+        '<div class="remnant-inventory-picker">' +
+          '<select id="invSelect"><option value=\"\">在庫から使いたい残材を選択</option></select>' +
+          '<button id="invUseBtn" type="button">追加</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="remnant-area">' +
+        '<div class="remnant-head"><span>計算に使う残材</span></div>' +
+        '<div id="remnantList"></div>' +
+      '</div>';
+
+    var addBtn = document.getElementById('invUseBtn');
+    var select = document.getElementById('invSelect');
+    if (addBtn) addBtn.onclick = addFromInventory;
+    if (select) select.onchange = updateInventoryUseButton;
+  }
+
+  function run() {
+    renderRemnantSectionShell();
+    buildInventoryDropdown();
+    syncInventoryToRemnants();
+    updateInventoryUseButton();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(run, 0);
+    });
+  } else {
+    setTimeout(run, 0);
+  }
+})();
+
 var _selectedInventoryRemnantsState = null;
 
 function loadSelectedInventoryRemnantsState() {
