@@ -236,18 +236,17 @@ function getCardBarsById(cardId) {
 function parsePatternPieces(text) {
   var pieces = [];
   var normalized = String(text || '').replace(/\s+/g, ' ').trim();
-  var pairRegex = /([\d,]+)(?:mm)?\D+(\d+)/g;
-  var matched = false;
-  var match;
-  while ((match = pairRegex.exec(normalized))) {
-    matched = true;
-    var len = parseInt(match[1].replace(/,/g, ''), 10) || 0;
-    var qty = parseInt(match[2], 10) || 0;
-    for (var i = 0; i < qty; i++) if (len) pieces.push(len);
-  }
-  if (matched) return pieces;
   normalized.split('+').forEach(function(part) {
-    var single = String(part || '').match(/([\d,]+)(?:mm)?/);
+    var token = String(part || '').trim();
+    if (!token) return;
+    var pair = token.match(/([\d,]+)(?:\s*mm)?\s*[x×＊*]\s*(\d+)(?:\s*本)?/i);
+    if (pair) {
+      var len = parseInt(pair[1].replace(/,/g, ''), 10) || 0;
+      var qty = parseInt(pair[2], 10) || 0;
+      for (var i = 0; i < qty; i++) if (len) pieces.push(len);
+      return;
+    }
+    var single = token.match(/([\d,]+)(?:\s*mm)?/i);
     if (single) {
       var one = parseInt(single[1].replace(/,/g, ''), 10) || 0;
       if (one) pieces.push(one);
@@ -558,6 +557,24 @@ function deleteInventoryGroup(groupKey) {
   renderInventoryPage();
 }
 
+function updateInventoryGroupNote(groupKey, value) {
+  var ids = String(groupKey || '').split(',').map(function(id) {
+    return parseInt(id, 10);
+  }).filter(function(id) {
+    return !isNaN(id);
+  });
+  if (!ids.length || typeof saveInventory !== 'function' || typeof getInventory !== 'function') return;
+  var note = String(value == null ? '' : value).trim();
+  var inv = getInventory().map(function(item) {
+    if (ids.indexOf(item.id) === -1) return item;
+    return Object.assign({}, item, { note: note });
+  });
+  saveInventory(inv);
+  syncInventoryToRemnants();
+  updateInvDropdown();
+  renderInventoryPage();
+}
+
 var _baseRenderInventoryPage = typeof renderInventoryPage === 'function' ? renderInventoryPage : null;
 renderInventoryPage = function() {
   var cont = document.getElementById('invListCont');
@@ -639,7 +656,7 @@ renderInventoryPage = function() {
           '<span class="inv-spec">' + escapeHtml(item.spec) + '</span>' +
           '<span class="inv-len"><span class="inv-len-stack">' + Number(item.len || 0).toLocaleString() + '<span class="inv-len-unit">mm</span></span><span class="inv-qty">x ' + item.qty + '</span></span>' +
           '<span class="inv-company">' + escapeHtml(item.company) + '</span>' +
-          '<span class="inv-note">' + escapeHtml(item.note) + '</span>' +
+          '<input class="inv-note-input" type="text" value="' + escapeHtml(item.note === '-' ? '' : item.note) + '" placeholder="メモ" onchange="updateInventoryGroupNote(\'' + item.ids.join(',') + '\', this.value)" />' +
           '<span class="inv-date">' + escapeHtml(item.addedDate) + '</span>' +
           '<button onclick="deleteInventoryGroup(\'' + item.ids.join(',') + '\')" class="inv-del-btn">削除</button>' +
         '</div>';

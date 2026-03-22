@@ -544,6 +544,22 @@ footer{border-radius:0;background:rgba(15,14,23,.8)}
 .inv-len-unit { font-size:10px; color:#aaa; margin-left:2px; }
 .inv-qty { font-size:11px; color:#5a5a78; background:#f0f0f6; border:1px solid #e0e0ea; border-radius:4px; padding:1px 7px; }
 .inv-note { flex:1; font-size:11px; color:#888; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.inv-note-input{
+  width:100%;
+  min-width:0;
+  height:34px;
+  padding:0 10px;
+  border:1px solid #d9d9e6;
+  border-radius:8px;
+  background:#fff;
+  color:#2d2d42;
+  font-size:12px;
+  outline:none;
+}
+.inv-note-input:focus{
+  border-color:#bfc3d9;
+  box-shadow:0 0 0 3px rgba(15,23,42,.05);
+}
 .inv-date { font-size:10px; color:#aaa; white-space:nowrap; }
 .inv-del-btn { opacity:0; transition:opacity .15s; background:none; border:1px solid rgba(248,113,113,.3); color:#f87171; border-radius:6px; padding:3px 7px; cursor:pointer; font-size:11px; }
 .inv-row:hover .inv-del-btn { opacity:1; }
