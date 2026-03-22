@@ -184,12 +184,12 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div>
           <div style="font-size:10px;color:#8888a8;font-weight:700;letter-spacing:.06em;margin-bottom:4px">顧客名</div>
-          <input type="text" id="hsClient" placeholder="例：○○建設" oninput="renderHistory()" list="hsClientList" autocomplete="off" style="width:100%;background:#f8f8fc;border:1px solid #e0e0ea;color:#1a1a2e;border-radius:8px;padding:7px 10px;font-size:12px;box-sizing:border-box;outline:none">
+          <input type="text" id="hsClient" placeholder="" oninput="renderHistory()" list="hsClientList" autocomplete="off" style="width:100%;background:#f8f8fc;border:1px solid #e0e0ea;color:#1a1a2e;border-radius:8px;padding:7px 10px;font-size:12px;box-sizing:border-box;outline:none">
           <datalist id="hsClientList"></datalist>
         </div>
         <div>
           <div style="font-size:10px;color:#8888a8;font-weight:700;letter-spacing:.06em;margin-bottom:4px">工事名</div>
-          <input type="text" id="hsName" placeholder="例：○○橋梁工事" oninput="renderHistory()" list="hsNameList" autocomplete="off" style="width:100%;background:#f8f8fc;border:1px solid #e0e0ea;color:#1a1a2e;border-radius:8px;padding:7px 10px;font-size:12px;box-sizing:border-box;outline:none">
+          <input type="text" id="hsName" placeholder="" oninput="renderHistory()" list="hsNameList" autocomplete="off" style="width:100%;background:#f8f8fc;border:1px solid #e0e0ea;color:#1a1a2e;border-radius:8px;padding:7px 10px;font-size:12px;box-sizing:border-box;outline:none">
           <datalist id="hsNameList"></datalist>
         </div>
         <div>
@@ -254,7 +254,7 @@
             </div>
             <div>
               <div style="font-size:10px;color:#8888a8;font-weight:700;margin-bottom:3px">長さ (mm)</div>
-              <input type="number" id="invAddLen" min="1" placeholder="例: 3600" style="width:100%;background:#fff;border:1px solid #e0e0ea;color:#1a1a2e;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;outline:none">
+              <input type="number" id="invAddLen" min="1" placeholder="" style="width:100%;background:#fff;border:1px solid #e0e0ea;color:#1a1a2e;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;outline:none">
             </div>
             <div>
               <div style="font-size:10px;color:#8888a8;font-weight:700;margin-bottom:3px">本数</div>
@@ -262,14 +262,14 @@
             </div>
             <div>
               <div style="font-size:10px;color:#8888a8;font-weight:700;margin-bottom:3px">会社名・現場名（任意）</div>
-              <input type="text" id="invAddCompany" placeholder="例：林工業" style="width:100%;background:#fff;border:1px solid #e0e0ea;color:#1a1a2e;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;outline:none">
+              <input type="text" id="invAddCompany" placeholder="" style="width:100%;background:#fff;border:1px solid #e0e0ea;color:#1a1a2e;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;outline:none">
             </div>
             <div>
               <div style="font-size:10px;color:#8888a8;font-weight:700;margin-bottom:3px">メモ（任意）</div>
-              <input type="text" id="invAddNote" placeholder="例：○○工事端材" style="width:100%;background:#fff;border:1px solid #e0e0ea;color:#1a1a2e;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;outline:none">
+              <input type="text" id="invAddNote" placeholder="" style="width:100%;background:#fff;border:1px solid #e0e0ea;color:#1a1a2e;border-radius:6px;padding:6px 8px;font-size:12px;box-sizing:border-box;outline:none">
             </div>
           </div>
-          <button onclick="manualAddInventory();document.getElementById('invAddFormInner').style.display='none'" style="width:100%;background:var(--br);color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">在庫に追加</button>
+          <button onclick="manualAddInventory();document.getElementById('invAddFormInner').style.display='none'" style="width:100%;background:#fff;color:#1a1a2e;border:1.5px solid #d4d4dc;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">在庫に追加</button>
         </div>
       </div>
       <div id="invListCont"></div>

@@ -2256,6 +2256,30 @@ function stkInputChange(i) {
 
 document.addEventListener('DOMContentLoaded', function() {
   init();
+
+  // 履歴・在庫タブ内のinput/selectでEnterキーを押したら次の要素へ
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    var el = e.target;
+    var tag = el.tagName;
+    if (tag !== 'INPUT' && tag !== 'SELECT') return;
+    // 部材リストはptEnterで処理するので除外
+    if (el.id && (el.id.indexOf('pl') === 0 || el.id.indexOf('pq') === 0)) return;
+    // textarea除外
+    if (el.type === 'textarea') return;
+
+    e.preventDefault();
+    // フォーカス可能な要素を順に取得して次へ
+    var focusable = Array.from(document.querySelectorAll(
+      'input:not([disabled]):not([readonly]):not([type=hidden]), select:not([disabled]), button:not([disabled])'
+    )).filter(function(x) {
+      return x.offsetParent !== null; // 表示されているもののみ
+    });
+    var idx = focusable.indexOf(el);
+    if (idx >= 0 && idx < focusable.length - 1) {
+      focusable[idx + 1].focus();
+    }
+  });
 });
 document.addEventListener('input', function(e) {
   if (e.target.id === 'kgm') updKg();

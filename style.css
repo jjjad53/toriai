@@ -41,7 +41,7 @@ nav a:hover,nav a.active{color:#1a1a2e;background:rgba(109,40,217,.1);text-shado
 /* CALC PAGE LAYOUT — 入力を狭く、結果を広く */
 .layout{display:grid;grid-template-columns:310px 1fr;flex:1;height:calc(100vh - 54px)}
 .sb{background:#ffffff;border-right:2px solid #d4d4dc;padding:16px 14px;overflow-y:auto;max-height:calc(100vh - 54px);display:flex;flex-direction:column;gap:14px}
-.mn{padding:20px;overflow-y:auto;background:#f4f4f6;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 54px)}
+.mn{padding:20px;overflow-y:auto;background:#ffffff;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 54px)}
 
 /* SIDEBAR COMPONENTS */
 .shd{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#2a2a3e;margin-bottom:8px}
