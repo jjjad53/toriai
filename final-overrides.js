@@ -235,16 +235,19 @@ function getCardBarsById(cardId) {
 
 function parsePatternPieces(text) {
   var pieces = [];
-  String(text || '').split('+').forEach(function(part) {
-    var normalized = part.replace(/\s+/g, ' ').trim();
-    var match = normalized.match(/([\d,]+)(?:mm)?\s*[x\u00d7*]\s*(\d+)/i);
-    if (match) {
-      var len = parseInt(match[1].replace(/,/g, ''), 10) || 0;
-      var qty = parseInt(match[2], 10) || 0;
-      for (var i = 0; i < qty; i++) if (len) pieces.push(len);
-      return;
-    }
-    var single = normalized.match(/([\d,]+)(?:mm)?/);
+  var normalized = String(text || '').replace(/\s+/g, ' ').trim();
+  var pairRegex = /([\d,]+)(?:mm)?\D+(\d+)/g;
+  var matched = false;
+  var match;
+  while ((match = pairRegex.exec(normalized))) {
+    matched = true;
+    var len = parseInt(match[1].replace(/,/g, ''), 10) || 0;
+    var qty = parseInt(match[2], 10) || 0;
+    for (var i = 0; i < qty; i++) if (len) pieces.push(len);
+  }
+  if (matched) return pieces;
+  normalized.split('+').forEach(function(part) {
+    var single = String(part || '').match(/([\d,]+)(?:mm)?/);
     if (single) {
       var one = parseInt(single[1].replace(/,/g, ''), 10) || 0;
       if (one) pieces.push(one);
@@ -284,6 +287,8 @@ function buildBarsFromCardPattern(cardId) {
 }
 
 function getBarsForSelectedCard(cardId, resultData) {
+  var barsFromCard = buildBarsFromCardPattern(cardId);
+  if (barsFromCard.length) return barsFromCard;
   var result = resultData || window._lastCalcResult || {};
   var id = String(cardId || '');
   var labelMatch = id.match(/^card_pat_([^_]+)/);
@@ -303,8 +308,6 @@ function getBarsForSelectedCard(cardId, resultData) {
       return { pat: (b.pat || []).slice(), loss: b.loss || 0, sl: b.sl || result.allDP[0].slA || 0 };
     });
   }
-  var barsFromCard = buildBarsFromCardPattern(cardId);
-  if (barsFromCard.length) return barsFromCard;
   return getCardBarsById(cardId);
 }
 
