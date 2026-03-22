@@ -428,14 +428,21 @@ printCard = function(cardId) {
 autoRegisterAfterPrint = function() {
   var cardId = window._lastPrintedCardId;
   if (!cardId || typeof registerRemnants !== 'function') return;
+  var bars = getBarsForSelectedCard(cardId, window._lastCalcResult);
   var rems = getLatestPrintedHistoryRemnants(cardId);
   if (!rems.length && typeof extractRemnants === 'function') rems = extractRemnants(window._lastCalcResult, cardId);
-  if (!rems.length) rems = extractRemnantsFromBars(getBarsForSelectedCard(cardId, window._lastCalcResult));
+  if (!rems.length) rems = extractRemnantsFromBars(bars);
   if (!rems.length) return;
   var signature = buildRemnantSignature(cardId, rems);
   if (window._lastPrintedRemnantSignature === signature) return;
   window._lastPrintedRemnantSignature = signature;
   registerRemnants(rems);
+  if (typeof consumeInventoryBars === 'function') {
+    consumeInventoryBars(
+      bars,
+      window._lastCalcResult && window._lastCalcResult.meta ? window._lastCalcResult.meta : {}
+    );
+  }
 };
 
 var _baseCartDoPrint = typeof cartDoPrint === 'function' ? cartDoPrint : null;
@@ -462,6 +469,14 @@ cartDoPrint = function() {
   if (window._lastPrintedRemnantSignature === signature) return result;
   window._lastPrintedRemnantSignature = signature;
   registerRemnants(allRems);
+  if (typeof consumeInventoryBars === 'function') {
+    cartSnapshot.forEach(function(item) {
+      var data = item && item.data ? item.data : {};
+      var bars = Array.isArray(data.bars) && data.bars.length ? data.bars : getBarsForSelectedCard(data.cardId || item.cardId, window._lastCalcResult);
+      var meta = data.resultMeta || (window._lastCalcResult && window._lastCalcResult.meta) || {};
+      consumeInventoryBars(bars, meta);
+    });
+  }
   return result;
 };
 
@@ -556,13 +571,6 @@ function bindInventoryListActions() {
   if (!cont || cont.dataset.actionsBound === '1') return;
   cont.dataset.actionsBound = '1';
   cont.addEventListener('click', function(e) {
-    var delBtn = e.target.closest('.inv-del-btn[data-group-key]');
-    if (delBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      deleteInventoryGroup(delBtn.dataset.groupKey || '');
-      return;
-    }
     var editBtn = e.target.closest('.inv-note-badge[data-group-key]');
     if (editBtn) {
       e.preventDefault();
