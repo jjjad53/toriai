@@ -21,12 +21,12 @@
   --r-lg:16px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#f4f4f6}
-body{color:#1a1a2e;font-family:'Space Grotesk','Noto Sans JP',sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;background:#f4f4f6}
+html,body{height:100%;background:#ffffff}
+body{color:#1a1a2e;font-family:'Space Grotesk','Noto Sans JP',sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;background:#ffffff}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:#f0f0f4}::-webkit-scrollbar-thumb{background:#8888a8;border-radius:4px}
 
 /* HEADER */
-header{position:sticky;top:0;z-index:100;background:#ffffff;border-bottom:2px solid #d4d4dc;height:54px;display:flex;align-items:center;padding:0 24px;gap:28px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+header{position:sticky;top:0;z-index:100;background:#ffffff;border-bottom:1px solid #e0e0ea;height:54px;display:flex;align-items:center;padding:0 24px;gap:28px;box-shadow:none}
 .logo{font-size:16px;font-weight:900;letter-spacing:-.02em;white-space:nowrap;color:#1a1a2e;display:flex;align-items:center;gap:6px}
 .logo .dot{color:#6d28d9}
 .logo .beta{font-size:9px;font-weight:700;font-style:normal;letter-spacing:.2em;text-transform:uppercase;color:#1a1a2e;border:1px solid #1a1a2e;padding:2px 6px;border-radius:3px;margin-left:9px;vertical-align:middle;opacity:.9}
@@ -40,7 +40,7 @@ nav a:hover,nav a.active{color:#1a1a2e;background:rgba(109,40,217,.1);text-shado
 
 /* CALC PAGE LAYOUT — 入力を狭く、結果を広く */
 .layout{display:grid;grid-template-columns:310px 1fr;flex:1;height:calc(100vh - 54px)}
-.sb{background:#ffffff;border-right:2px solid #d4d4dc;padding:16px 14px;overflow-y:auto;max-height:calc(100vh - 54px);display:flex;flex-direction:column;gap:14px}
+.sb{background:#ffffff;border-right:1px solid #e0e0ea;padding:16px 14px;overflow-y:auto;max-height:calc(100vh - 54px);display:flex;flex-direction:column;gap:14px}
 .mn{padding:20px;overflow-y:auto;background:#ffffff;display:flex;flex-direction:column;gap:16px;max-height:calc(100vh - 54px)}
 
 /* SIDEBAR COMPONENTS */

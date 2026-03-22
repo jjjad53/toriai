@@ -300,14 +300,27 @@ function addFromInventory() {
   var len = parseInt(parts[0]);
   var qty = parseInt(parts[1]);
   if (!len || !qty) return;
-  // 残材入力欄に追加
   addRemnant();
   var i = remnantCount - 1;
   document.getElementById('remLen'+i).value = len;
   document.getElementById('remQty'+i).value = qty;
   saveRemnants();
-  // セレクトをリセット
   sel.value = '';
+  // ボタンを「追加済み」に変化
+  var btn = document.getElementById('invUseBtn');
+  if (btn) {
+    btn.textContent = '✓ 追加済み';
+    btn.style.background = '#16a34a';
+    btn.style.color = '#fff';
+    btn.disabled = true;
+    // 2秒後に戻す
+    setTimeout(function() {
+      btn.textContent = '＋ 計算に使う';
+      btn.style.background = 'transparent';
+      btn.style.color = '#16a34a';
+      btn.disabled = false;
+    }, 2000);
+  }
 }
 
 function togStk(i) {
