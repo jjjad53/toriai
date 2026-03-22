@@ -3340,8 +3340,9 @@ function saveRemnants() {
   var selected = getSelectedInventoryRemnants();
   document.querySelectorAll('#remnantList .rem-row[data-source="inventory"]').forEach(function(row) {
     var qtyEl = row.querySelector('.rem-qty');
+    var maxQty = Math.max(1, parseInt(row.dataset.maxQty || '1', 10));
     selected[row.dataset.inventoryKey] = {
-      qty: Math.max(0, parseInt(qtyEl && qtyEl.value, 10) || 0)
+      qty: Math.max(1, Math.min(maxQty, parseInt(qtyEl && qtyEl.value, 10) || 1))
     };
   });
   saveSelectedInventoryRemnants(selected);
@@ -3362,9 +3363,10 @@ function createInventoryRemnantRow(item, selectedQty) {
   row.dataset.source = 'inventory';
   row.dataset.inventoryKey = String(item.ids || []);
   row.dataset.inventoryIds = JSON.stringify(item.ids || []);
+  row.dataset.maxQty = String(item.qty || 1);
   row.innerHTML =
     '<div class="rem-label-group"><span class="rem-label-title">' + Number(item.len || 0).toLocaleString() + 'mm</span><span class="rem-label-sub">在庫 ' + (item.qty || 1) + '本</span></div>' +
-    '<select class="rem-qty" id="remQty' + i + '" onchange="saveRemnants()">' + options + '</select>' +
+    '<input type="number" class="rem-qty" id="remQty' + i + '" min="1" max="' + (item.qty || 1) + '" value="' + usage + '" oninput="saveRemnants()">' +
     '<div class="rem-meta">今回使う本数 / ' + escapeHtml(item.company || item.label || '在庫から選択') + '</div>' +
     '<button type="button" class="rem-del" onclick="removeRemnant(' + i + ')">×</button>';
   list.appendChild(row);
@@ -3425,7 +3427,7 @@ function normalizeInterfaceChrome() {
   var remHead = document.querySelector('.remnant-head span');
   if (remHead) remHead.textContent = '計算に使う残材';
   var invBtn = document.getElementById('invUseBtn');
-  if (invBtn) invBtn.textContent = '計算に使う';
+  if (invBtn) invBtn.textContent = '追加';
   var invSelect = document.getElementById('invSelect');
   if (invSelect && invSelect.options.length) {
     invSelect.options[0].textContent = '在庫から使いたい残材を選択';

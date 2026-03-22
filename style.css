@@ -1086,6 +1086,8 @@ input:focus,select:focus,textarea:focus{
 }
 .rem-row[data-source="inventory"] .rem-qty{
   min-width:88px;
+  text-align:center;
+  font-weight:700;
 }
 .rem-row[data-source="inventory"] .rem-meta{
   font-weight:600;
