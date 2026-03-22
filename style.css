@@ -547,6 +547,35 @@ footer{border-radius:0;background:rgba(15,14,23,.8)}
 .inv-date { font-size:10px; color:#aaa; white-space:nowrap; }
 .inv-del-btn { opacity:0; transition:opacity .15s; background:none; border:1px solid rgba(248,113,113,.3); color:#f87171; border-radius:6px; padding:3px 7px; cursor:pointer; font-size:11px; }
 .inv-row:hover .inv-del-btn { opacity:1; }
+.inv-len{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.inv-len-stack{
+  display:inline-flex;
+  align-items:flex-end;
+  gap:2px;
+}
+.rem-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.rem-pill{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:2px 8px;
+  font-size:11px;
+  color:#2d2d42;
+  background:#fff;
+  border:1px solid #e1e1ea;
+  border-radius:999px;
+}
+.rem-pill-empty{
+  color:#8888a8;
+}
 
 /* ══════════════════════════════════════════════
    🛒 カートバッジ・ボタン

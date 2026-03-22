@@ -318,11 +318,12 @@ function getBarsForSelectedCard(cardId, resultData) {
 function buildRemHtmlFromRemnants(rems) {
   var counts = {};
   (rems || []).forEach(function(item) {
-    counts[item.len] = (counts[item.len] || 0) + 1;
+    var qty = Math.max(1, parseInt(item && item.qty, 10) || 1);
+    counts[item.len] = (counts[item.len] || 0) + qty;
   });
   return '<div class="rem-list">' + Object.keys(counts).sort(function(a, b) { return Number(b) - Number(a); }).map(function(len) {
     var qty = counts[len];
-    return '<span>' + Number(len).toLocaleString() + 'mm' + (qty > 1 ? ' x ' + qty : '') + '</span>';
+    return '<span class="rem-pill">' + Number(len).toLocaleString() + 'mm' + (qty > 1 ? ' x ' + qty : '') + '</span>';
   }).join('') + '</div>';
 }
 
@@ -501,6 +502,152 @@ render = function() {
   var out = _baseRender ? _baseRender.apply(this, arguments) : undefined;
   hydrateYieldRemnantLists();
   return out;
+};
+
+function renderCardRemnantSection(card, rems) {
+  if (!card) return;
+  var section = card.querySelector('.rem-section');
+  if (!section) {
+    section = document.createElement('div');
+    section.className = 'rem-section';
+    section.style.cssText = 'padding:6px 14px;background:#f8f8fb;border-top:1px solid #e8e8ed';
+    var pat = card.querySelector('.cc-pat');
+    if (pat && pat.parentNode === card) pat.insertAdjacentElement('afterend', section);
+    else card.appendChild(section);
+  }
+  section.innerHTML =
+    '<div style="font-size:10px;color:#8888a8;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">端材リスト</div>' +
+    (rems.length ? buildRemHtmlFromRemnants(rems) : '<div class="rem-list"><span class="rem-pill rem-pill-empty">なし</span></div>');
+}
+
+function hydrateCardRemnantLists() {
+  document.querySelectorAll('.cc[id]').forEach(function(card) {
+    var rems = extractRemnantsFromBars(getBarsForSelectedCard(card.id, window._lastCalcResult));
+    renderCardRemnantSection(card, rems);
+  });
+}
+
+var _renderAfterRemnantOverride = render;
+render = function() {
+  var out = _renderAfterRemnantOverride ? _renderAfterRemnantOverride.apply(this, arguments) : undefined;
+  hydrateCardRemnantLists();
+  return out;
+};
+
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function deleteInventoryGroup(groupKey) {
+  var ids = String(groupKey || '').split(',').map(function(id) {
+    return parseInt(id, 10);
+  }).filter(function(id) {
+    return !isNaN(id);
+  });
+  if (!ids.length || typeof saveInventory !== 'function' || typeof getInventory !== 'function') return;
+  saveInventory(getInventory().filter(function(item) {
+    return ids.indexOf(item.id) === -1;
+  }));
+  syncInventoryToRemnants();
+  updateInvDropdown();
+  renderInventoryPage();
+}
+
+var _baseRenderInventoryPage = typeof renderInventoryPage === 'function' ? renderInventoryPage : null;
+renderInventoryPage = function() {
+  var cont = document.getElementById('invListCont');
+  var empty = document.getElementById('invEmptyMsg');
+  if (!cont) {
+    return _baseRenderInventoryPage ? _baseRenderInventoryPage.apply(this, arguments) : undefined;
+  }
+
+  var kindF = ((document.getElementById('invFilterKind') || {}).value || '');
+  var specF = ((document.getElementById('invFilterSpec') || {}).value || '');
+  var keyword = (((document.getElementById('invKeyword') || {}).value) || '').toLowerCase();
+  var dateFrom = ((document.getElementById('invDateFrom') || {}).value || '');
+  var sort = ((document.getElementById('invSort') || {}).value || 'date_desc');
+  var inv = getInventory().slice();
+
+  if (kindF) inv = inv.filter(function(item) { return item.kind === kindF; });
+  if (specF) inv = inv.filter(function(item) { return item.spec === specF; });
+  if (keyword) inv = inv.filter(function(item) {
+    return [item.spec, item.kind, item.company, item.note, item.len].join(' ').toLowerCase().indexOf(keyword) >= 0;
+  });
+  if (dateFrom) inv = inv.filter(function(item) { return parseDateValue(item.addedDate) >= parseDateValue(dateFrom); });
+  inv.sort(function(a, b) {
+    if (sort === 'date_asc') return parseDateValue(a.addedDate) - parseDateValue(b.addedDate);
+    if (sort === 'len_desc') return (b.len || 0) - (a.len || 0);
+    if (sort === 'len_asc') return (a.len || 0) - (b.len || 0);
+    if (sort === 'spec_asc') return String(a.spec || '').localeCompare(String(b.spec || ''), 'ja');
+    return parseDateValue(b.addedDate) - parseDateValue(a.addedDate);
+  });
+
+  if (!inv.length) {
+    cont.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    renderPager('invPagination', 1, 1, 'setInventoryPage');
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  var grouped = {};
+  inv.forEach(function(item) {
+    var specKey = item.spec || item.kind || '未設定';
+    var lenKey = parseInt(item.len || 0, 10) || 0;
+    var key = specKey + '::' + lenKey;
+    if (!grouped[key]) grouped[key] = { spec: specKey, len: lenKey, items: [] };
+    grouped[key].items.push(item);
+  });
+
+  var rows = Object.keys(grouped).map(function(key) {
+    var group = grouped[key];
+    var companies = group.items.map(function(item) { return item.company || ''; }).filter(Boolean);
+    var notes = group.items.map(function(item) { return item.note || ''; }).filter(Boolean);
+    var dates = group.items.map(function(item) { return item.addedDate || ''; }).filter(Boolean).sort(function(a, b) {
+      return parseDateValue(b) - parseDateValue(a);
+    });
+    return {
+      spec: group.spec,
+      len: group.len,
+      qty: group.items.length,
+      ids: group.items.map(function(item) { return item.id; }),
+      company: !companies.length ? '-' : (Array.from(new Set(companies)).length === 1 ? companies[0] : '複数'),
+      note: !notes.length ? '-' : (Array.from(new Set(notes)).length === 1 ? notes[0] : '複数'),
+      addedDate: dates[0] || ''
+    };
+  });
+
+  var pageData = paginateItems(rows, inventoryPage, INVENTORY_PAGE_SIZE);
+  inventoryPage = pageData.page;
+  var specGroups = {};
+  pageData.items.forEach(function(item) {
+    if (!specGroups[item.spec]) specGroups[item.spec] = [];
+    specGroups[item.spec].push(item);
+  });
+
+  cont.innerHTML = Object.keys(specGroups).sort().map(function(spec) {
+    return '<div class="inv-card">' +
+      '<div class="inv-card-header"><span class="inv-spec-label">' + escapeHtml(spec) + '</span><span class="inv-count-badge">' + specGroups[spec].reduce(function(sum, row) { return sum + row.qty; }, 0) + '本</span></div>' +
+      '<div class="inv-col-header"><span>寸法</span><span>長さ</span><span>会社名</span><span>メモ</span><span>登録日</span><span></span></div>' +
+      specGroups[spec].map(function(item) {
+        return '<div class="inv-row">' +
+          '<span class="inv-spec">' + escapeHtml(item.spec) + '</span>' +
+          '<span class="inv-len"><span class="inv-len-stack">' + Number(item.len || 0).toLocaleString() + '<span class="inv-len-unit">mm</span></span><span class="inv-qty">x ' + item.qty + '</span></span>' +
+          '<span class="inv-company">' + escapeHtml(item.company) + '</span>' +
+          '<span class="inv-note">' + escapeHtml(item.note) + '</span>' +
+          '<span class="inv-date">' + escapeHtml(item.addedDate) + '</span>' +
+          '<button onclick="deleteInventoryGroup(\'' + item.ids.join(',') + '\')" class="inv-del-btn">削除</button>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }).join('');
+
+  renderPager('invPagination', inventoryPage, pageData.totalPages, 'setInventoryPage');
 };
 
 (function initializeFinalOverrides() {
