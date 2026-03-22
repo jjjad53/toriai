@@ -359,15 +359,6 @@ cartAdd = function(cardId, btn) {
     }
     saveCart(cart);
   }
-  if (rems.length && typeof registerRemnants === 'function') {
-    var signature = JSON.stringify(rems.map(function(item) {
-      return [item.spec, item.kind, item.sl, item.len];
-    }).sort());
-    if (window._lastRegisteredRemnantSignature !== signature) {
-      window._lastRegisteredRemnantSignature = signature;
-      registerRemnants(rems);
-    }
-  }
   return result;
 };
 
@@ -432,11 +423,14 @@ autoRegisterAfterPrint = function() {
   if (!cardId || typeof registerRemnants !== 'function') return;
   var rems = extractRemnantsFromBars(getBarsForSelectedCard(cardId, window._lastCalcResult));
   if (!rems.length) return;
-  var signature = JSON.stringify(rems.map(function(item) {
-    return [item.spec, item.kind, item.sl, item.len];
-  }).sort());
-  if (window._lastRegisteredRemnantSignature === signature) return;
-  window._lastRegisteredRemnantSignature = signature;
+  var signature = JSON.stringify([
+    cardId,
+    rems.map(function(item) {
+      return [item.spec, item.kind, item.sl, item.len];
+    }).sort()
+  ]);
+  if (window._lastPrintedRemnantSignature === signature) return;
+  window._lastPrintedRemnantSignature = signature;
   registerRemnants(rems);
 };
 
