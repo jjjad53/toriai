@@ -195,6 +195,32 @@ function extractRemnantsFromBars(bars) {
   return rems;
 }
 
+function extractRemnantsFromCard(cardId) {
+  var card = document.getElementById(cardId);
+  if (!card) return [];
+  var minLen = parseInt((document.getElementById('minRemnantLen') || {}).value, 10) || 500;
+  var spec = (document.getElementById('spec') || {}).value || '';
+  var kind = typeof getCurrentKind === 'function' ? getCurrentKind() : (window.curKind || '');
+  var rems = [];
+  var remEl = card.querySelector('[class*="rem-section"]') || card.querySelector('.rem-list');
+  if (!remEl) return rems;
+
+  remEl.querySelectorAll('span').forEach(function(span) {
+    var text = (span.textContent || '').replace(/\s+/g, ' ').trim();
+    if (!text || text === 'なし' || text.indexOf('mm未満') >= 0) return;
+    var lenMatch = text.match(/([\d,]+)\s*mm/i);
+    if (!lenMatch) return;
+    var qtyMatch = text.match(/[x×]\s*(\d+)/i);
+    var len = parseInt(lenMatch[1].replace(/,/g, ''), 10);
+    var qty = qtyMatch ? Math.max(1, parseInt(qtyMatch[1], 10) || 1) : 1;
+    if (!len || len < minLen) return;
+    for (var i = 0; i < qty; i++) {
+      rems.push({ len: len, spec: spec, kind: kind, sl: 0 });
+    }
+  });
+  return rems;
+}
+
 function getCardBarsById(cardId) {
   var card = document.getElementById(cardId);
   if (!card) return [];
@@ -212,9 +238,9 @@ saveCutHistory = function(resultData, cardId) {
   var entry = _baseSaveCutHistory ? _baseSaveCutHistory(resultData, cardId) : null;
   if (!entry || !entry.result) return entry;
 
-  var selectedBars = getCardBarsById(cardId);
-  if (selectedBars.length) {
-    entry.result.remnants = extractRemnantsFromBars(selectedBars);
+  var selectedRemnants = extractRemnantsFromCard(cardId);
+  if (selectedRemnants.length) {
+    entry.result.remnants = selectedRemnants;
     entry.printedCardId = cardId || entry.printedCardId || '';
     try {
       var hist = getCutHistory();
@@ -230,8 +256,7 @@ saveCutHistory = function(resultData, cardId) {
 var _baseCartAdd = typeof cartAdd === 'function' ? cartAdd : null;
 cartAdd = function(cardId, btn) {
   var result = _baseCartAdd ? _baseCartAdd(cardId, btn) : undefined;
-  var bars = getCardBarsById(cardId);
-  var rems = extractRemnantsFromBars(bars);
+  var rems = extractRemnantsFromCard(cardId);
   if (rems.length && typeof registerRemnants === 'function') {
     var signature = JSON.stringify(rems.map(function(item) {
       return [item.spec, item.kind, item.sl, item.len];
