@@ -542,6 +542,7 @@ function deleteInventoryGroup(groupKey) {
     return String(id || '').trim();
   }).filter(Boolean);
   if (!ids.length || typeof saveInventory !== 'function' || typeof getInventory !== 'function') return;
+  if (!confirm('この在庫を削除しますか？')) return;
   saveInventory(getInventory().filter(function(item) {
     return ids.indexOf(String(item.id)) === -1;
   }));
