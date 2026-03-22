@@ -882,9 +882,6 @@ function doCalc() {
     if (patC) patC = mergeRemnants(patC);
   }
 
-  render(single, top3, chgPlans, endLoss, remnantResult.remnantBars, kgm, allDP, calcPieces, bundlePlan, patA, patB, patC, yieldCard1, yieldCard2);
-
-  // グローバル変数に保存（印刷・切断完了ボタン用）
   _lastCalcResult = {
     allDP: allDP,
     patA: patA,
@@ -901,6 +898,10 @@ function doCalc() {
       stocks: (stocks || []).map(function(stock) { return { sl: stock.sl, max: stock.max }; })
     }
   };
+
+  render(single, top3, chgPlans, endLoss, remnantResult.remnantBars, kgm, allDP, calcPieces, bundlePlan, patA, patB, patC, yieldCard1, yieldCard2);
+
+  // グローバル変数に保存（印刷・切断完了ボタン用）
   _lastAllDP = allDP || [];
   _lastPatA = patA;
   _lastPatB = patB;
@@ -972,10 +973,10 @@ function applyWorkerResults(results, stocks, minValidLen, endLoss, kgm) {
       if (patB.plan80) patB.plan80 = mergeRemnants(patB.plan80);
     }
   }
+  _lastCalcResult = { allDP: ry.allDP, patA: patA, patB: patB, patC: patC, meta: meta };
   render(ry.single || [], [], ry.chgPlans || [], endLoss, remBars, kgm,
     ry.allDP || [], ry.calcPieces || [], ry.bundlePlan || null,
     patA, patB, patC, ry.yieldCard1 || null, null);
-  _lastCalcResult = { allDP: ry.allDP, patA: patA, patB: patB, patC: patC, meta: meta };
   _lastAllDP = ry.allDP || [];
   _lastPatA = patA;
   _lastPatB = patB;
