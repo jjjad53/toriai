@@ -233,7 +233,59 @@ function getCardBarsById(cardId) {
   return parseBarsFromDiagHtml(diagHtml, 0, endLoss);
 }
 
+function parsePatternPieces(text) {
+  var pieces = [];
+  String(text || '').split('+').forEach(function(part) {
+    var normalized = part.replace(/\s+/g, ' ').trim();
+    var match = normalized.match(/([\d,]+)(?:mm)?\s*[x\u00d7*]\s*(\d+)/i);
+    if (match) {
+      var len = parseInt(match[1].replace(/,/g, ''), 10) || 0;
+      var qty = parseInt(match[2], 10) || 0;
+      for (var i = 0; i < qty; i++) if (len) pieces.push(len);
+      return;
+    }
+    var single = normalized.match(/([\d,]+)(?:mm)?/);
+    if (single) {
+      var one = parseInt(single[1].replace(/,/g, ''), 10) || 0;
+      if (one) pieces.push(one);
+    }
+  });
+  return pieces;
+}
+
+function buildBarsFromCardPattern(cardId) {
+  var card = document.getElementById(cardId);
+  if (!card) return [];
+  var blade = parseInt(((document.getElementById('blade') || {}).value), 10) || 3;
+  var endLoss = parseInt(((document.getElementById('endloss') || {}).value), 10) || 150;
+  var bars = [];
+
+  card.querySelectorAll('.cc-pat .pc').forEach(function(block) {
+    var hd = block.querySelector('.pc-hd span');
+    var slMatch = hd ? String(hd.textContent || '').match(/([\d,]+)\s*mm/i) : null;
+    var sl = slMatch ? parseInt(slMatch[1].replace(/,/g, ''), 10) || 0 : 0;
+    if (!sl) return;
+
+    block.querySelectorAll('.pc-row').forEach(function(row) {
+      var countText = ((row.querySelector('.px') || {}).textContent || '');
+      var count = parseInt(countText.replace(/[^\d]/g, ''), 10) || 1;
+      var pieceText = ((row.querySelector('.pp') || {}).textContent || '');
+      var pat = parsePatternPieces(pieceText);
+      if (!pat.length) return;
+      var used = pat.reduce(function(sum, len) { return sum + len; }, 0) + blade * Math.max(0, pat.length - 1) + endLoss;
+      var loss = Math.max(0, sl - used);
+      for (var i = 0; i < count; i++) {
+        bars.push({ pat: pat.slice(), loss: loss, sl: sl });
+      }
+    });
+  });
+
+  return bars;
+}
+
 function getBarsForSelectedCard(cardId, resultData) {
+  var barsFromCard = buildBarsFromCardPattern(cardId);
+  if (barsFromCard.length) return barsFromCard;
   var result = resultData || window._lastCalcResult || {};
   var id = String(cardId || '');
   var labelMatch = id.match(/^card_pat_([^_]+)/);
