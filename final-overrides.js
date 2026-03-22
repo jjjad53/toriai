@@ -716,7 +716,7 @@ renderInventoryPage = function() {
             '</div>' +
           '</div>' +
           '<span class="inv-date">' + escapeHtml(item.addedDate) + '</span>' +
-          '<button type="button" class="inv-del-btn" data-group-key="' + groupKey + '" onclick="deleteInventoryGroup(\'' + groupKey + '\')">削除</button>' +
+          '<div class="inv-action"><button type="button" class="inv-del-btn" data-group-key="' + groupKey + '" onclick="deleteInventoryGroup(\'' + groupKey + '\')">削除</button></div>' +
         '</div>';
       }).join('') +
     '</div>';
