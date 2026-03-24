@@ -360,7 +360,7 @@ function updateInventoryUseButton(forceReady) {
   btn.disabled = !(sel && sel.value);
 }
 
-function addFromInventory() {
+function legacyAddFromInventory_v1() {
   var sel = document.getElementById('invSelect');
   if (!sel || !sel.value) return;
   var parts = sel.value.split(':');
@@ -1732,7 +1732,7 @@ function updateCartBadge() {
 }
 
 /** カードの情報を収集してカートに追加 */
-function cartAdd(cardId, btn) {
+function legacyCartAdd(cardId, btn) {
   var card = document.getElementById(cardId);
   if (!card) return;
 
@@ -1881,7 +1881,7 @@ function cartPrint() {
 }
 
 /** カートの内容で作業指示書を印刷 */
-function cartDoPrint() {
+function legacyCartDoPrint() {
   var cart = getCart();
   if (!cart.length) { alert('カートが空です。'); return; }
 
@@ -2364,7 +2364,7 @@ function getInventoryForCurrentSpec() {
   });
 }
 
-function addFromInventory() {
+function legacyAddFromInventory_v2() {
   var sel = document.getElementById('invSelect');
   if (!sel || !sel.value) return;
   var parts = sel.value.split(':');
@@ -2870,7 +2870,7 @@ function getRemnants() {
   return result;
 }
 
-function addFromInventory() {
+function legacyAddFromInventory_v3() {
   var sel = document.getElementById('invSelect');
   if (!sel || !sel.value) return;
   var parts = sel.value.split(':');
@@ -3117,11 +3117,11 @@ function normalizeInterfaceChrome() {
 
 // Final remnant UI behavior override. This block must stay at EOF so stale
 // duplicated definitions earlier in the file cannot win.
-function getSelectedInventoryRemnants() {
+function legacyGetSelectedInventoryRemnants_v1() {
   return loadSelectedInventoryRemnantsState();
 }
 
-function saveSelectedInventoryRemnants(data) {
+function legacySaveSelectedInventoryRemnants_v1(data) {
   _selectedInventoryRemnantsState = data && typeof data === 'object' ? data : {};
   persistSelectedInventoryRemnantsState();
 }
@@ -3156,7 +3156,7 @@ function buildInventoryDropdown() {
   updateInventoryUseButton();
 }
 
-function addFromInventory() {
+function legacyAddFromInventory_v4() {
   var sel = document.getElementById('invSelect');
   if (!sel || !sel.value) return;
   var items = getInventoryForCurrentSpec();
@@ -3273,11 +3273,11 @@ function getRemnants() {
   }
 })();
 
-function getSelectedInventoryRemnants() {
+function legacyGetSelectedInventoryRemnants_v2() {
   return loadSelectedInventoryRemnantsState();
 }
 
-function saveSelectedInventoryRemnants(data) {
+function legacySaveSelectedInventoryRemnants_v2(data) {
   _selectedInventoryRemnantsState = data && typeof data === 'object' ? data : {};
   persistSelectedInventoryRemnantsState();
 }
@@ -3312,7 +3312,7 @@ function buildInventoryDropdown() {
   updateInventoryUseButton();
 }
 
-function addFromInventory() {
+function legacyAddFromInventory_v5() {
   var sel = document.getElementById('invSelect');
   if (!sel || !sel.value) return;
   var items = getInventoryForCurrentSpec();
@@ -3462,7 +3462,7 @@ function buildInventoryDropdown() {
   updateInventoryUseButton();
 }
 
-function addFromInventory() {
+function legacyAddFromInventory_v6() {
   var sel = document.getElementById('invSelect');
   if (!sel || !sel.value) return;
   var items = getInventoryForCurrentSpec();
@@ -3641,7 +3641,7 @@ function buildInventoryDropdown() {
   updateInventoryUseButton();
 }
 
-function addFromInventory() {
+function legacyAddFromInventory_v7() {
   var sel = document.getElementById('invSelect');
   if (!sel || !sel.value) return;
   var items = getInventoryForCurrentSpec();

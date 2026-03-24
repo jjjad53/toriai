@@ -623,7 +623,7 @@ function getZoneInfo() {
  * @param {Object} resultData - _lastCalcResult
  * @param {string} [cardId] - 印刷したカードID
  */
-function saveCutHistory(resultData, cardId) {
+function legacySaveCutHistory(resultData, cardId) {
   var job = getJobInfo();
   var zones = getZoneInfo();
   var hist = getCutHistory();
@@ -758,7 +758,7 @@ function buildRemnantsFromBars(bars, meta) {
 }
 
 // ── 計算結果から端材リストを抽出 ──
-function extractRemnants(resultData, cardId) {
+function legacyExtractRemnants(resultData, cardId) {
   var result = resultData && resultData.result ? resultData.result : (resultData || {});
   return buildRemnantsFromBars(getSelectedBarsFromResultData(result, cardId), buildResultMeta(result));
 }
