@@ -887,6 +887,66 @@ function consumeInventoryBars(bars, meta) {
   return consumed;
 }
 
+function consumeSelectedInventoryRemnants(selectedItems) {
+  var items = Array.isArray(selectedItems) ? selectedItems : [];
+  if (!items.length) return [];
+
+  var inv = getInventory().slice();
+  var consumed = [];
+
+  items.forEach(function(sel) {
+    var qty = Math.max(0, parseInt(sel && sel.qty, 10) || 0);
+    if (!qty) return;
+
+    var ids = Array.isArray(sel && sel.ids)
+      ? sel.ids.map(function(id) { return String(id); })
+      : [];
+    var remaining = qty;
+
+    ids.forEach(function(id) {
+      if (remaining <= 0) return;
+      var idx = inv.findIndex(function(item) {
+        return String(item && item.id) === id;
+      });
+      if (idx < 0) return;
+      consumed.push(inv[idx]);
+      inv.splice(idx, 1);
+      remaining--;
+    });
+
+    if (remaining <= 0) return;
+
+    var len = parseInt(sel && sel.len, 10) || 0;
+    var spec = sel && sel.spec ? sel.spec : '';
+    var kind = sel && sel.kind ? sel.kind : '';
+
+    while (remaining > 0) {
+      var idx = inv.findIndex(function(item) {
+        return (!len || Number(item && item.len) === len) &&
+          (!spec || item.spec === spec) &&
+          (!kind || item.kind === kind);
+      });
+      if (idx < 0 && len) {
+        idx = inv.findIndex(function(item) {
+          return Number(item && item.len) === len;
+        });
+      }
+      if (idx < 0) break;
+      consumed.push(inv[idx]);
+      inv.splice(idx, 1);
+      remaining--;
+    }
+  });
+
+  if (!consumed.length) return [];
+
+  saveInventory(inv);
+  if (typeof syncInventoryToRemnants === 'function') syncInventoryToRemnants();
+  if (typeof renderInventoryPage === 'function') renderInventoryPage();
+  if (typeof updateInvDropdown === 'function') updateInvDropdown();
+  return consumed;
+}
+
 function addInventoryItem() {
   var spec = prompt('規格（例：H-200×100）');
   if (!spec) return;
