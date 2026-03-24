@@ -462,7 +462,7 @@ function buildPurchaseMailto(summary, cart) {
   lines.push('');
   lines.push('よろしくお願いいたします。');
   var subject = '';
-  return 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
+  return 'mailto:konoshima@inoue-kouzai.co.jp?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
 }
 
 function buildPurchaseGmailUrl(summary, cart) {
@@ -487,10 +487,61 @@ function buildPurchaseGmailUrl(summary, cart) {
   var params = [
     'view=cm',
     'fs=1',
+    'to=' + encodeURIComponent('konoshima@inoue-kouzai.co.jp'),
     'su=' + encodeURIComponent(''),
     'body=' + encodeURIComponent(lines.join('\n'))
   ];
   return 'https://mail.google.com/mail/?' + params.join('&');
+}
+
+function buildFeedbackBody() {
+  var client = (document.getElementById('jobClient') || {}).value || '';
+  var jobName = (document.getElementById('jobName') || {}).value || '';
+  var note = (document.getElementById('jobWorker') || {}).value || '';
+  var feedbackType = (document.getElementById('contactType') || {}).value || 'ご意見';
+  var sender = (document.getElementById('contactSender') || {}).value || '';
+  var reply = (document.getElementById('contactReply') || {}).value || '';
+  var body = (document.getElementById('contactBody') || {}).value || '';
+  return [
+    'お世話になっております。',
+    '',
+    'TORIAI ベータ版について、以下の内容を共有します。',
+    '',
+    '種別: ' + feedbackType,
+    '顧客名: ' + client,
+    '工事名: ' + jobName,
+    '送信者名: ' + sender,
+    '返信先: ' + reply,
+    'メモ: ' + note,
+    '',
+    '【内容】',
+    body || '',
+    '',
+    'よろしくお願いいたします。'
+  ].join('\n');
+}
+
+function buildFeedbackMailto() {
+  return 'mailto:konoshima@inoue-kouzai.co.jp?subject=' + encodeURIComponent('TORIAI ベータ版お問い合わせ') + '&body=' + encodeURIComponent(buildFeedbackBody());
+}
+
+function buildFeedbackGmailUrl() {
+  var params = [
+    'view=cm',
+    'fs=1',
+    'to=' + encodeURIComponent('konoshima@inoue-kouzai.co.jp'),
+    'su=' + encodeURIComponent('TORIAI ベータ版お問い合わせ'),
+    'body=' + encodeURIComponent(buildFeedbackBody())
+  ];
+  return 'https://mail.google.com/mail/?' + params.join('&');
+}
+
+function openFeedbackMailDefault() {
+  window.location.href = buildFeedbackMailto();
+}
+
+function openFeedbackMailGmail() {
+  window.open(buildFeedbackGmailUrl(), '_blank');
 }
 
 function getLatestPrintedHistoryRemnants(cardId) {
@@ -1027,6 +1078,105 @@ renderInventoryPage = function() {
     document.addEventListener('DOMContentLoaded', bind, { once: true });
   } else {
     bind();
+  }
+})();
+
+(function injectContactPage() {
+  function ensureContactNav() {
+    var nav = document.querySelector('header nav');
+    if (!nav || document.getElementById('ncontact')) return;
+    var cartBadge = document.getElementById('cartBadge');
+    var link = document.createElement('a');
+    link.id = 'ncontact';
+    link.textContent = 'お問い合わせ';
+    link.href = 'javascript:void(0)';
+    link.onclick = function() {
+      if (typeof goPage === 'function') goPage('contact');
+    };
+    if (cartBadge && cartBadge.parentNode === nav) nav.insertBefore(link, cartBadge);
+    else nav.appendChild(link);
+  }
+
+  function ensureContactPage() {
+    if (document.getElementById('contactp')) return;
+    var page = document.createElement('div');
+    page.id = 'contactp';
+    page.className = 'pg';
+    page.innerHTML =
+      '<div class="contact-page">' +
+        '<div class="contact-card">' +
+          '<div class="contact-title">お問い合わせ</div>' +
+          '<p class="contact-lead">TORIAI はベータ版です。使いづらかった点や欲しい機能、不具合などをお聞きしながら改善していきたいです。</p>' +
+          '<div class="contact-grid">' +
+            '<div class="contact-field">' +
+              '<label for="contactType">種別</label>' +
+              '<select id="contactType">' +
+                '<option value="ご意見">ご意見</option>' +
+                '<option value="不具合報告">不具合報告</option>' +
+                '<option value="改善要望">改善要望</option>' +
+                '<option value="その他">その他</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="contact-field">' +
+              '<label for="contactSender">お名前</label>' +
+              '<input type="text" id="contactSender" placeholder="お名前">' +
+            '</div>' +
+            '<div class="contact-field contact-field-wide">' +
+              '<label for="contactReply">返信先メール</label>' +
+              '<input type="email" id="contactReply" placeholder="返信が必要な場合のみ">' +
+            '</div>' +
+            '<div class="contact-field contact-field-wide">' +
+              '<label for="contactBody">内容</label>' +
+              '<textarea id="contactBody" placeholder="気になった点やご要望をご記入ください"></textarea>' +
+            '</div>' +
+          '</div>' +
+          '<div class="contact-actions">' +
+            '<button type="button" class="cart-purchase-mail" onclick="openFeedbackMailDefault()">既定のメールで開く</button>' +
+            '<button type="button" class="cart-purchase-mail" onclick="openFeedbackMailGmail()">Gmailで開く</button>' +
+          '</div>' +
+          '<div class="contact-destination">送信先: konoshima@inoue-kouzai.co.jp</div>' +
+        '</div>' +
+      '</div>';
+
+    var historyPage = document.getElementById('hip');
+    if (historyPage && historyPage.parentNode) {
+      historyPage.parentNode.insertBefore(page, historyPage.nextSibling);
+    } else {
+      document.body.appendChild(page);
+    }
+  }
+
+  var _baseGoPage = typeof goPage === 'function' ? goPage : null;
+  if (_baseGoPage) {
+    goPage = function(p) {
+      ensureContactNav();
+      ensureContactPage();
+      var navCalc = document.getElementById('na');
+      var navHist = document.getElementById('nhi');
+      var navContact = document.getElementById('ncontact');
+      if (p === 'contact') {
+        document.querySelectorAll('.pg').forEach(function(el) { el.classList.remove('show'); });
+        var contactPage = document.getElementById('contactp');
+        if (contactPage) contactPage.classList.add('show');
+        if (navCalc) navCalc.classList.remove('active');
+        if (navHist) navHist.classList.remove('active');
+        if (navContact) navContact.classList.add('active');
+        return;
+      }
+      _baseGoPage.apply(this, arguments);
+      if (navContact) navContact.classList.remove('active');
+    };
+  }
+
+  function initContactPage() {
+    ensureContactNav();
+    ensureContactPage();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initContactPage, { once: true });
+  } else {
+    initContactPage();
   }
 })();
 
