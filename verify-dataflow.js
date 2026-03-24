@@ -166,6 +166,34 @@ test('saveCutHistory stores selected bars and remnants for chosen card', functio
   assert(entry.result.remnants[0].len === 941, 'history remnant should be 941');
 });
 
+test('saveCutHistory keeps yield card separation by card id', function() {
+  const result = {
+    allDP: [
+      { slA: 12000, bars: [{ pat: [1600, 1600], loss: 6044, sl: 12000 }], bA: [], bB: [] },
+      { slA: 11000, bars: [{ pat: [1600, 600], loss: 617, sl: 11000 }], bA: [], bB: [] }
+    ],
+    meta: sampleMeta()
+  };
+  const entry = saveCutHistory(result, 'card_yield_1');
+  assert(entry.result.selectedBars.length === 1, 'yield second card should store one selected bar');
+  assert(entry.result.selectedBars[0].sl === 11000, 'yield second card should store 11000 bar');
+  assert(entry.result.remnants.length === 1 && entry.result.remnants[0].len === 617, 'yield second card should store matching remnant');
+});
+
+test('extractRemnants resolves B80 card without mixing B90 remnants', function() {
+  const result = {
+    patA: { sl: 7000, bars: [{ pat: [1600], loss: 3147, sl: 7000 }] },
+    patB: {
+      plan90: { sl: 7000, bars: [{ pat: [1600, 600], loss: 3147, sl: 7000 }] },
+      plan80: { sl: 5500, bars: [{ pat: [1600, 1600, 600, 600], loss: 941, sl: 5500 }] }
+    },
+    meta: sampleMeta()
+  };
+  const rems = extractRemnants(result, 'card_pat_B80_9');
+  assert(rems.length === 1, 'B80 should produce one remnant entry');
+  assert(rems[0].len === 941, 'B80 should keep its own 941 remnant');
+});
+
 test('consumeSelectedInventoryRemnants removes exact selected ids', function() {
   saveInventory([
     { id: 'a', len: 941, spec: 'H-100x100x6x8', kind: 'H' },
