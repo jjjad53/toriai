@@ -320,7 +320,7 @@ function onSpec() {
   buildInventoryDropdown();
 }
 
-function buildInventoryDropdown() {
+function legacyBuildInventoryDropdown_v1() {
   var cont = document.getElementById('invDropCont');
   if (!cont) return;
   var items = getInventoryForCurrentSpec();
@@ -514,7 +514,7 @@ function addRemnant() {
   list.appendChild(d);
 }
 
-function removeRemnant(i) {
+function legacyRemoveRemnant_v1(i) {
   var el = document.getElementById('remRow' + i);
   if (el) el.remove();
 }
@@ -535,7 +535,7 @@ function getRemnants() {
 }
 
 // ── 在庫と手持ち残材を完全同期 ──
-function syncInventoryToRemnants() {
+function legacySyncInventoryToRemnants_v1() {
   var inv = getInventory();
   var list = document.getElementById('remnantList');
   if (!list) return;
@@ -614,7 +614,7 @@ function buildInvFilterSpec() {
 }
 
 // ── 在庫ページ描画（フィルタ付き） ──
-function renderInventoryPage() {
+function legacyRenderInventoryPage_v1() {
   var cont = document.getElementById('invListCont');
   var empty = document.getElementById('invEmptyMsg');
   if (!cont) return;
@@ -2386,7 +2386,7 @@ function legacyAddFromInventory_v2() {
   updateInventoryUseButton(true);
 }
 
-function syncInventoryToRemnants() {
+function legacySyncInventoryToRemnants_v2() {
   var list = document.getElementById('remnantList');
   if (!list) return;
   var grouped = getInventoryForCurrentSpec();
@@ -2427,7 +2427,7 @@ function removeGroupedInventory(index) {
   renderInventoryPage();
 }
 
-function buildInventoryDropdown() {
+function legacyBuildInventoryDropdown_v2() {
   var cont = document.getElementById('invDropCont');
   if (!cont) return;
   var items = getInventoryForCurrentSpec();
@@ -2446,7 +2446,7 @@ function buildInventoryDropdown() {
   updateInventoryUseButton();
 }
 
-function renderInventoryPage() {
+function legacyRenderInventoryPage_v2() {
   var cont = document.getElementById('invListCont');
   var empty = document.getElementById('invEmptyMsg');
   if (!cont) return;
@@ -2776,7 +2776,7 @@ function getInventoryRemnantUsage() {
   }
 }
 
-function saveRemnants() {
+function legacySaveRemnants_v1() {
   var manual = [];
   var usage = {};
   document.querySelectorAll('#remnantList .rem-row').forEach(function(row) {
@@ -2852,7 +2852,7 @@ function addRemnant(seed) {
   }
 }
 
-function removeRemnant(i) {
+function legacyRemoveRemnant_v2(i) {
   var row = document.getElementById('remRow' + i);
   if (row) row.remove();
   if (!document.querySelector('#remnantList .rem-row[data-source="manual"]')) {
@@ -2886,7 +2886,7 @@ function legacyAddFromInventory_v3() {
   updateInventoryUseButton(true);
 }
 
-function syncInventoryToRemnants() {
+function legacySyncInventoryToRemnants_v3() {
   var list = document.getElementById('remnantList');
   if (!list) return;
   var grouped = getInventoryForCurrentSpec();
@@ -2906,7 +2906,7 @@ function syncInventoryToRemnants() {
   saveRemnants();
 }
 
-function buildInventoryDropdown() {
+function legacyBuildInventoryDropdown_v3() {
   var cont = document.getElementById('invDropCont');
   if (!cont) return;
   var items = getInventoryForCurrentSpec();
@@ -3138,7 +3138,7 @@ function updateInventoryUseButton() {
   btn.disabled = !(sel && sel.value);
 }
 
-function buildInventoryDropdown() {
+function legacyBuildInventoryDropdown_v4() {
   var cont = document.getElementById('invDropCont');
   var sel = document.getElementById('invSelect');
   var badge = document.getElementById('invBadge');
@@ -3177,7 +3177,7 @@ function legacyAddFromInventory_v4() {
   updateInventoryUseButton();
 }
 
-function removeRemnant(i) {
+function legacyRemoveRemnant_v3(i) {
   var row = document.getElementById('remRow' + i);
   if (!row) return;
   var state = getSelectedInventoryRemnants();
@@ -3187,7 +3187,7 @@ function removeRemnant(i) {
   updateInventoryUseButton();
 }
 
-function saveRemnants() {
+function legacySaveRemnants_v2() {
   var state = {};
   document.querySelectorAll('#remnantList .rem-row[data-source="inventory"]').forEach(function(row) {
     var qtyEl = row.querySelector('.rem-qty');
@@ -3224,7 +3224,7 @@ function createInventoryRemnantRow(item, selectedQty) {
   return row;
 }
 
-function syncInventoryToRemnants() {
+function legacySyncInventoryToRemnants_v4() {
   var list = document.getElementById('remnantList');
   if (!list) return;
   var grouped = getInventoryForCurrentSpec();
@@ -3294,7 +3294,7 @@ function updateInventoryUseButton() {
   btn.disabled = !(sel && sel.value);
 }
 
-function buildInventoryDropdown() {
+function legacyBuildInventoryDropdown_v5() {
   var cont = document.getElementById('invDropCont');
   var sel = document.getElementById('invSelect');
   var badge = document.getElementById('invBadge');
@@ -3333,7 +3333,7 @@ function legacyAddFromInventory_v5() {
   updateInventoryUseButton();
 }
 
-function removeRemnant(i) {
+function legacyRemoveRemnant_v4(i) {
   var row = document.getElementById('remRow' + i);
   if (!row) return;
   var state = getSelectedInventoryRemnants();
@@ -3343,7 +3343,7 @@ function removeRemnant(i) {
   updateInventoryUseButton();
 }
 
-function saveRemnants() {
+function legacySaveRemnants_v3() {
   var state = {};
   document.querySelectorAll('#remnantList .rem-row[data-source="inventory"]').forEach(function(row) {
     var qtyEl = row.querySelector('.rem-qty');
@@ -3380,7 +3380,7 @@ function createInventoryRemnantRow(item, selectedQty) {
   return row;
 }
 
-function syncInventoryToRemnants() {
+function legacySyncInventoryToRemnants_v5() {
   var list = document.getElementById('remnantList');
   if (!list) return;
   var grouped = getInventoryForCurrentSpec();
@@ -3447,7 +3447,7 @@ function updateInventoryUseButton() {
   btn.disabled = !(sel && sel.value);
 }
 
-function buildInventoryDropdown() {
+function legacyBuildInventoryDropdown_v6() {
   var cont = document.getElementById('invDropCont');
   if (!cont) return;
   var items = getInventoryForCurrentSpec();
@@ -3501,7 +3501,7 @@ function createInventoryRemnantRow(item, selectedQty) {
   return row;
 }
 
-function saveRemnants() {
+function legacySaveRemnants_v4() {
   var selected = {};
   document.querySelectorAll('#remnantList .rem-row[data-source="inventory"]').forEach(function(row) {
     var qtyEl = row.querySelector('.rem-qty');
@@ -3513,7 +3513,7 @@ function saveRemnants() {
   saveSelectedInventoryRemnants(selected);
 }
 
-function removeRemnant(i) {
+function legacyRemoveRemnant_v5(i) {
   var row = document.getElementById('remRow' + i);
   if (!row) return;
   var selected = getSelectedInventoryRemnants();
@@ -3523,7 +3523,7 @@ function removeRemnant(i) {
   updateInventoryUseButton();
 }
 
-function syncInventoryToRemnants() {
+function legacySyncInventoryToRemnants_v6() {
   var list = document.getElementById('remnantList');
   if (!list) return;
   var grouped = getInventoryForCurrentSpec();
@@ -3626,7 +3626,7 @@ function updateInventoryUseButton() {
   btn.disabled = !(sel && sel.value);
 }
 
-function buildInventoryDropdown() {
+function legacyBuildInventoryDropdown_v7() {
   var cont = document.getElementById('invDropCont');
   if (!cont) return;
   var items = getInventoryForCurrentSpec();
@@ -3681,7 +3681,7 @@ function createInventoryRemnantRow(item, selectedQty) {
   return row;
 }
 
-function syncInventoryToRemnants() {
+function legacySyncInventoryToRemnants_v7() {
   var list = document.getElementById('remnantList');
   if (!list) return;
   var grouped = getInventoryForCurrentSpec();
@@ -3697,7 +3697,7 @@ function syncInventoryToRemnants() {
   }
 }
 
-function saveRemnants() {
+function legacySaveRemnants_v5() {
   var next = {};
   document.querySelectorAll('#remnantList .rem-row[data-source="inventory"]').forEach(function(row) {
     var qtyEl = row.querySelector('.rem-qty');
@@ -3710,7 +3710,7 @@ function saveRemnants() {
   persistSelectedInventoryRemnantsState();
 }
 
-function removeRemnant(i) {
+function legacyRemoveRemnant_v6(i) {
   var row = document.getElementById('remRow' + i);
   if (!row) return;
   var state = loadSelectedInventoryRemnantsState();

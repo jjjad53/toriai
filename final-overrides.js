@@ -363,13 +363,13 @@ function buildPrintPayload(cardId, resultData, fallbackData) {
   var payload = typeof buildCardSelectionPayload === 'function'
     ? buildCardSelectionPayload(resultData || window._lastCalcResult || {}, cardId)
     : null;
-  var bars = payload && payload.selectedBars && payload.selectedBars.length
+  var bars = payload
     ? payload.selectedBars.slice()
     : (Array.isArray(data.bars) && data.bars.length
         ? data.bars.slice()
         : getBarsForSelectedCard(cardId, resultData || window._lastCalcResult));
   var meta = data.resultMeta || (payload ? payload.meta : null) || (resultData && resultData.meta) || (window._lastCalcResult && window._lastCalcResult.meta) || {};
-  var rems = payload && payload.remnants && payload.remnants.length
+  var rems = payload
     ? payload.remnants.slice()
     : (Array.isArray(data.remnants) && data.remnants.length
         ? data.remnants.slice()

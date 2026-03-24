@@ -65,7 +65,7 @@ function getAllInventory() {
 // 切断履歴を保存
 
 // 規格選択時：在庫を残材入力欄に反映するドロップダウン用データ
-function getInventoryForCurrentSpec() {
+function legacyGetInventoryForCurrentSpec_v1() {
   var spec = document.getElementById('spec') ? document.getElementById('spec').value : '';
   var kind = curKind;
   var inv = getInventory();
@@ -135,7 +135,7 @@ function loadSettings() {
   } catch(e) {}
 }
 
-function saveRemnants() {
+function legacySaveRemnants_v1() {
   try {
     var list = [];
     for (var i = 0; i < remnantCount; i++) {
