@@ -1368,6 +1368,7 @@ function render(single, top3, chgPlans, endLoss, remnantBars, kgm, allDP, origPi
           '<div class="cc-stats">' +
             '<div class="cs"><div class="cl">残材本数</div><div class="cv">' + remnantBars.length + ' 本</div></div>' +
           '</div>' +
+          '<div class="cc-btns"><button class="cc-btn-add" id="add_' + remOnlyCardId + '" onclick="cartAdd(\'' + remOnlyCardId + '\',this)">＋ 作業指示書に追加</button></div>' +
         '</div>' +
         '<div class="rem-section" style="padding:6px 12px;background:#f8f8fc;border-top:1px solid #ebebf0">' +
           '<div style="font-size:10px;color:#5a5a78;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">端材リスト</div>' +
