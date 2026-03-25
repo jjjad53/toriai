@@ -348,24 +348,25 @@
 <!-- CONTACT PAGE / お問い合わせ -->
 <div id="cop" class="pg">
   <div style="max-width:560px;margin:0 auto;padding:24px 16px;width:100%;box-sizing:border-box">
-    <div style="font-size:20px;font-weight:800;color:#1a1a2e;margin-bottom:6px">📩 お問い合わせ</div>
+    <div style="font-size:20px;font-weight:800;color:#1a1a2e;margin-bottom:6px">お問い合わせ</div>
     <div style="font-size:12px;color:#8888a8;margin-bottom:24px">ご質問・ご要望などお気軽にどうぞ。内容を確認後、担当者よりご連絡いたします。</div>
 
     <form id="contactForm" onsubmit="submitContactForm(event)" novalidate>
       <div style="margin-bottom:14px">
-        <label style="font-size:11px;font-weight:700;color:#5a5a78;letter-spacing:.05em;display:block;margin-bottom:4px">お名前 <span style="color:#e05">*</span></label>
-        <input type="text" id="contactName" placeholder="例：山田 太郎" required
-          style="width:100%;background:#f8f8fc;border:1px solid #d4d4dc;color:#1a1a2e;border-radius:8px;padding:10px 12px;font-size:13px;box-sizing:border-box;outline:none;font-family:inherit">
-      </div>
-      <div style="margin-bottom:14px">
-        <label style="font-size:11px;font-weight:700;color:#5a5a78;letter-spacing:.05em;display:block;margin-bottom:4px">メールアドレス <span style="color:#e05">*</span></label>
-        <input type="email" id="contactEmail" placeholder="例：yamada@example.com" required
+        <label class="contact-pen-label" style="font-size:11px;font-weight:700;color:#5a5a78;letter-spacing:.05em;display:block;margin-bottom:4px">ペンネーム <span style="color:#e05">*</span></label>
+        <input type="text" id="contactName" required
           style="width:100%;background:#f8f8fc;border:1px solid #d4d4dc;color:#1a1a2e;border-radius:8px;padding:10px 12px;font-size:13px;box-sizing:border-box;outline:none;font-family:inherit">
       </div>
       <div style="margin-bottom:14px">
         <label style="font-size:11px;font-weight:700;color:#5a5a78;letter-spacing:.05em;display:block;margin-bottom:4px">件名 <span style="color:#e05">*</span></label>
-        <input type="text" id="contactSubject" placeholder="例：機能についての質問" required
+        <select id="contactSubject" required
           style="width:100%;background:#f8f8fc;border:1px solid #d4d4dc;color:#1a1a2e;border-radius:8px;padding:10px 12px;font-size:13px;box-sizing:border-box;outline:none;font-family:inherit">
+          <option value="">選択してください</option>
+          <option value="機能についての質問">機能についての質問</option>
+          <option value="不具合の報告">不具合の報告</option>
+          <option value="改善要望">改善要望</option>
+          <option value="その他">その他</option>
+        </select>
       </div>
       <div style="margin-bottom:20px">
         <label style="font-size:11px;font-weight:700;color:#5a5a78;letter-spacing:.05em;display:block;margin-bottom:4px">お問い合わせ内容 <span style="color:#e05">*</span></label>
