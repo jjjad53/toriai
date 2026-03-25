@@ -76,14 +76,21 @@ function hiSwitch(tab) {
 
 function goPage(p) {
   document.querySelectorAll('.pg').forEach(function(el){ el.classList.remove('show'); });
+  // ナビ全リセット
+  ['na','nhi','nc'].forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+
   if (p === 'c') {
     document.getElementById('cp').classList.add('show');
     document.getElementById('na').classList.add('active');
-    document.getElementById('nhi').classList.remove('active');
+  } else if (p === 'contact') {
+    document.getElementById('cop').classList.add('show');
+    document.getElementById('nc').classList.add('active');
   } else {
     document.getElementById('hip').classList.add('show');
     document.getElementById('nhi').classList.add('active');
-    document.getElementById('na').classList.remove('active');
     // タブ切り替え
     var showH = (p === 'h' || p === 'hi');
     document.getElementById('hiPanelH').style.display = showH ? 'block' : 'none';
