@@ -448,6 +448,18 @@ function buildSinglePrintHtml(job, spec, payload, endLoss) {
 }
 
 (function hardenDataDrivenCutFlow() {
+  autoSyncResultRemnants = function() {
+    return;
+  };
+
+  showRegisterRemnantsBtn = function() {
+    return;
+  };
+
+  doRegisterRemnants = function() {
+    return;
+  };
+
   extractRemnantsFromCard = function(cardId) {
     return buildPrintPayload(cardId, window._lastCalcResult).rems.slice();
   };

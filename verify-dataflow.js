@@ -344,6 +344,17 @@ test('buildCutSourceLabel omits legacy wording', function() {
   assert(buildCutSourceLabel(941).indexOf('より切断') < 0, 'remnant label should omit legacy wording');
 });
 
+test('autoSyncResultRemnants does not register inventory during calculation', function() {
+  saveInventory([]);
+  autoSyncResultRemnants({
+    patB: {
+      plan80: { sl: 5500, bars: [{ pat: [1600, 1600, 600, 600], loss: 941, sl: 5500 }] }
+    },
+    meta: sampleMeta()
+  });
+  assert(getInventory().length === 0, 'inventory should not change before print');
+});
+
 test('stress: payload resolution remains stable across many card patterns', function() {
   const specs = ['H-100x100x6x8', 'RB-6', 'L-65x65x6'];
   for (let i = 0; i < 3000; i++) {
