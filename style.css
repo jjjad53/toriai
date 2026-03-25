@@ -760,6 +760,13 @@ header{
   background:rgba(255,255,255,.94);
   backdrop-filter:blur(10px);
 }
+header nav{
+  flex:1;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
 .logo{
   gap:10px;
   display:flex;
@@ -780,6 +787,15 @@ header{
   margin-left:0;
   border-color:#111;
   color:#111;
+}
+.header-cart-btn{
+  margin-left:auto;
+  min-height:36px;
+  padding:0 14px;
+  border-radius:12px;
+}
+.header-contact-link{
+  margin-left:4px;
 }
 .calc-note{
   margin:10px 2px 12px;

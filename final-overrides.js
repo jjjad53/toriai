@@ -166,7 +166,7 @@ function getRemnants() {
 
 function cleanCartChrome() {
   var cartTitle = document.querySelector('#cartModal .cart-modal-hd span[style*="font-size:15px"]');
-  if (cartTitle) cartTitle.textContent = '印刷カート';
+  if (cartTitle) cartTitle.textContent = '出力カート';
   var cartIcon = document.querySelector('#cartModal .cart-modal-hd span[style*="font-size:16px"]');
   if (cartIcon) cartIcon.remove();
 
@@ -550,12 +550,16 @@ function buildSinglePrintHtml(job, spec, payload, endLoss) {
     var calc = document.getElementById('na');
     var hist = document.getElementById('nhi');
     var contact = document.getElementById('nc') || document.getElementById('ncontact');
-    [cartBadge, calc, hist, contact].forEach(function(node) {
+    [calc, hist, cartBadge, contact].forEach(function(node) {
       if (node && node.parentNode === nav) nav.appendChild(node);
     });
     if (cartBadge) {
       var digits = String(cartBadge.textContent || '').replace(/[^\d]/g, '');
-      cartBadge.textContent = (digits || '0') + '件';
+      cartBadge.textContent = 'カート ' + (digits || '0') + '件';
+      cartBadge.classList.add('header-cart-btn');
+    }
+    if (contact) {
+      contact.classList.add('header-contact-link');
     }
     if (observer) observer.observe(nav, { childList: true, subtree: false });
     ordering = false;
@@ -1414,7 +1418,8 @@ renderInventoryPage = function() {
     if (!document.getElementById('cop')) ensureContactPage();
     var cartBadge = document.getElementById('cartBadge');
     if (cartBadge) {
-      cartBadge.textContent = (cartBadge.textContent || '').replace(/[^\d件]/g, '').trim() || '0件';
+      var digits = String(cartBadge.textContent || '').replace(/[^\d]/g, '');
+      cartBadge.textContent = 'カート ' + (digits || '0') + '件';
     }
     var page = document.getElementById('cop');
     if (page) {
