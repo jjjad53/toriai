@@ -95,3 +95,22 @@ function showContactStatus(msg, type) {
     el.style.color      = '#0369a1';
   }
 }
+
+(function styleContactSubmitButton() {
+  function applyStyle() {
+    var btn = document.getElementById('contactSubmitBtn');
+    if (!btn) return;
+    btn.style.background = '#ffffff';
+    btn.style.color = '#1a1a2e';
+    btn.style.border = '1px solid #d4d4dc';
+    btn.style.borderRadius = '10px';
+    btn.style.fontWeight = '700';
+    btn.style.boxShadow = 'none';
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyStyle, { once: true });
+  } else {
+    applyStyle();
+  }
+})();
