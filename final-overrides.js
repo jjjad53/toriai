@@ -1848,31 +1848,33 @@ function extractRemnantsFromCard(cardId) {
   }
 
   function openPicker(hidden, yearInput, monthInput, dayInput) {
-    var picker = document.createElement('input');
-    picker.type = 'date';
-    picker.value = hidden.value || ((digits(yearInput.value, 4) || '2026') + '-01-01');
-    picker.style.position = 'fixed';
-    picker.style.left = '-9999px';
-    picker.style.opacity = '0';
-    document.body.appendChild(picker);
-    picker.addEventListener('change', function() {
-      var m = String(picker.value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (m) {
-        yearInput.value = String(parseInt(m[1], 10));
-        monthInput.value = String(parseInt(m[2], 10));
-        dayInput.value = String(parseInt(m[3], 10));
-        syncDeadline(hidden, yearInput, monthInput, dayInput);
+    hidden.type = 'date';
+    hidden.classList.add('deadline-native-picker');
+    hidden.value = hidden.value || ((digits(yearInput.value, 4) || '2026') + '-01-01');
+
+    if (hidden.dataset.deadlineNativeBound !== '1') {
+      hidden.dataset.deadlineNativeBound = '1';
+      hidden.addEventListener('change', function() {
+        var m = String(hidden.value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (m) {
+          yearInput.value = String(parseInt(m[1], 10));
+          monthInput.value = String(parseInt(m[2], 10));
+          dayInput.value = String(parseInt(m[3], 10));
+          syncDeadline(hidden, yearInput, monthInput, dayInput);
+        }
+      });
+    }
+
+    try {
+      hidden.focus();
+      if (typeof hidden.showPicker === 'function') {
+        hidden.showPicker();
+      } else {
+        hidden.click();
       }
-      picker.remove();
-    }, { once: true });
-    picker.addEventListener('blur', function() {
-      setTimeout(function() {
-        if (picker.isConnected) picker.remove();
-      }, 0);
-    }, { once: true });
-    picker.focus();
-    if (typeof picker.showPicker === 'function') picker.showPicker();
-    else picker.click();
+    } catch (e) {
+      hidden.click();
+    }
   }
 
   function init() {
@@ -1880,6 +1882,8 @@ function extractRemnantsFromCard(cardId) {
     var wrap = document.querySelector('.deadline-split');
     if (!hidden || !wrap || wrap.dataset.deadlineRebuilt === '1') return;
     wrap.dataset.deadlineRebuilt = '1';
+
+    hidden.classList.add('deadline-native-picker');
 
     var match = String(hidden.value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
     var yyyy = match ? String(parseInt(match[1], 10)) : '2026';

@@ -1469,9 +1469,9 @@ input:focus,select:focus,textarea:focus{
   border:1px solid #d4d4dc;
   color:#2a2a3e;
   border-radius:var(--r-sm);
-  padding:7px 10px;
+  padding:8px 12px;
   box-sizing:border-box;
-  min-height:38px;
+  min-height:40px;
 }
 .deadline-sep{
   font-size:12px;
@@ -1527,4 +1527,14 @@ input:focus,select:focus,textarea:focus{
   width:14px;
   height:14px;
   fill:currentColor;
+}
+.deadline-native-picker{
+  position:absolute !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+  width:1px !important;
+  height:1px !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
 }
