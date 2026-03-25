@@ -949,6 +949,7 @@ function applyWorkerResults(results, stocks, minValidLen, endLoss, kgm) {
   var patA = results.patA ? results.patA.patA : null;
   var patB = results.patB ? results.patB.patB : null;
   var patC = null;
+  var remBars = ry.remnantBars || [];
   var meta = {
     calcId: 'calc_' + Date.now(),
     spec: (document.getElementById('spec') || {}).value || '',
@@ -967,7 +968,6 @@ function applyWorkerResults(results, stocks, minValidLen, endLoss, kgm) {
       return { pat: (bar.pat || []).slice(), loss: bar.loss || 0, sl: bar.sl || 0 };
     })
   };
-  var remBars = ry.remnantBars || [];
   if (remBars.length) {
     function mergeRemnants(pat) {
       if (!pat || !pat.bars) return pat;

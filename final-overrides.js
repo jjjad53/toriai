@@ -787,11 +787,22 @@ showHistPreview = function(id) {
   var orderedSls = sortStockLengthsForDisplay(Object.keys(slGroups).map(Number));
   var motherSummary = orderedSls.map(function(s) { return s.toLocaleString() + 'mm x ' + slGroups[s].length; }).join(' + ');
   var sumMap = {};
-  bars.forEach(function(b) {
-    (b.pat || []).forEach(function(len) {
-      sumMap[len] = (sumMap[len] || 0) + 1;
+  var origPieces = payload && payload.meta && Array.isArray(payload.meta.origPieces)
+    ? payload.meta.origPieces.slice()
+    : [];
+  if (origPieces.length) {
+    origPieces.forEach(function(len) {
+      var pieceLen = parseInt(len, 10) || 0;
+      if (!pieceLen) return;
+      sumMap[pieceLen] = (sumMap[pieceLen] || 0) + 1;
     });
-  });
+  } else {
+    bars.forEach(function(b) {
+      (b.pat || []).forEach(function(len) {
+        sumMap[len] = (sumMap[len] || 0) + 1;
+      });
+    });
+  }
   var remList = payload && payload.remnants ? payload.remnants.slice() : ((r.remnants || h.remnants) || []);
   var remTags = remList.filter(function(r2) { return r2.len >= 500; }).map(function(r2) {
     return r2.len.toLocaleString() + 'mm' + (r2.qty > 1 ? ' x ' + r2.qty : '');
