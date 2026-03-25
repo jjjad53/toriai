@@ -720,7 +720,7 @@ function buildFeedbackBody() {
 }
 
 function buildFeedbackMailto() {
-  return 'mailto:konoshima@inoue-kouzai.co.jp?subject=' + encodeURIComponent('TORIAI ベータ版お問い合わせ') + '&body=' + encodeURIComponent(buildFeedbackBody());
+  return 'mailto:konoshima@inoue-kouzai.co.jp?subject=' + encodeURIComponent('TORIAI お問い合わせ') + '&body=' + encodeURIComponent(buildFeedbackBody());
 }
 
 function buildFeedbackGmailUrl() {
@@ -728,7 +728,7 @@ function buildFeedbackGmailUrl() {
     'view=cm',
     'fs=1',
     'to=' + encodeURIComponent('konoshima@inoue-kouzai.co.jp'),
-    'su=' + encodeURIComponent('TORIAI ベータ版お問い合わせ'),
+    'su=' + encodeURIComponent('TORIAI お問い合わせ'),
     'body=' + encodeURIComponent(buildFeedbackBody())
   ];
   return 'https://mail.google.com/mail/?' + params.join('&');
@@ -1348,7 +1348,7 @@ renderInventoryPage = function() {
       '<div class="contact-page">' +
         '<div class="contact-card">' +
           '<div class="contact-title">お問い合わせ</div>' +
-          '<p class="contact-lead">TORIAI はベータ版です。使いづらかった点や欲しい機能、不具合などをお聞きしながら改善していきたいです。</p>' +
+          '<p class="contact-lead">使いづらかった点や欲しい機能、不具合などをお聞きしながら改善していきたいです。</p>' +
           '<div class="contact-grid">' +
             '<div class="contact-field">' +
               '<label for="contactType">種別</label>' +
@@ -1421,7 +1421,7 @@ renderInventoryPage = function() {
       var title = page.querySelector('div[style*="font-size:20px"]');
       if (title) title.textContent = 'お問い合わせ';
       var lead = page.querySelector('div[style*="font-size:12px;color:#8888a8"]');
-      if (lead) lead.textContent = 'ご質問やご要望をお送りください。内容を確認後、担当者よりご連絡いたします。';
+      if (lead) lead.textContent = 'ご質問やご要望をお送りください。';
       var subject = document.getElementById('contactSubject');
       if (subject && subject.tagName !== 'SELECT') {
         var select = document.createElement('select');
@@ -1442,6 +1442,9 @@ renderInventoryPage = function() {
         }
       });
     }
+    document.querySelectorAll('.beta, .beta-pixel').forEach(function(el) {
+      el.remove();
+    });
   }
 
   if (document.readyState === 'loading') {
