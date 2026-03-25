@@ -1561,6 +1561,9 @@ function extractRemnantsFromCard(cardId) {
     if (panel.dataset.dropdownBound !== '1') {
       panel.dataset.dropdownBound = '1';
       panel.addEventListener('click', function(e) {
+        if (!list.contains(e.target) && !selected.contains(e.target)) {
+          list.style.display = 'block';
+        }
         e.stopPropagation();
       });
       document.addEventListener('click', function(e) {
@@ -1610,5 +1613,107 @@ function extractRemnantsFromCard(cardId) {
     document.addEventListener('DOMContentLoaded', bindSpecPanelBehavior, { once: true });
   } else {
     bindSpecPanelBehavior();
+  }
+})();
+
+(function enhanceDeadlineInput() {
+  function pad2(v) {
+    v = String(v || '').replace(/[^\d]/g, '');
+    return v ? v.padStart(2, '0') : '';
+  }
+
+  function syncHidden(hidden, monthInput, dayInput) {
+    if (!hidden) return;
+    var mm = pad2(monthInput && monthInput.value);
+    var dd = pad2(dayInput && dayInput.value);
+    if (monthInput) monthInput.value = mm ? String(parseInt(mm, 10)) : '';
+    if (dayInput) dayInput.value = dd ? String(parseInt(dd, 10)) : '';
+    hidden.value = (mm && dd) ? ('2026-' + mm + '-' + dd) : '';
+    if (typeof saveSettings === 'function') saveSettings();
+  }
+
+  function bindEnterNav(input, target) {
+    if (!input) return;
+    input.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      if (target) {
+        target.focus();
+        if (typeof target.select === 'function') target.select();
+      }
+    });
+  }
+
+  function clampPart(input, max) {
+    if (!input) return;
+    input.addEventListener('input', function() {
+      var digits = String(input.value || '').replace(/[^\d]/g, '').slice(0, 2);
+      var num = parseInt(digits || '0', 10);
+      if (digits && num > max) num = max;
+      input.value = digits ? String(num) : '';
+    });
+  }
+
+  function init() {
+    var hidden = document.getElementById('jobDeadline');
+    if (!hidden || hidden.dataset.segmented === '1') return;
+    var field = hidden.closest('.field');
+    if (!field) return;
+
+    hidden.type = 'hidden';
+    hidden.dataset.segmented = '1';
+
+    var initial = String(hidden.value || '');
+    var mm0 = '';
+    var dd0 = '';
+    var m = initial.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) {
+      mm0 = String(parseInt(m[2], 10));
+      dd0 = String(parseInt(m[3], 10));
+    }
+
+    var wrap = document.createElement('div');
+    wrap.className = 'deadline-split';
+    wrap.innerHTML =
+      '<span class="deadline-year">2026</span>' +
+      '<span class="deadline-sep">/</span>' +
+      '<input type="text" id="jobDeadlineMonth" inputmode="numeric" autocomplete="off" placeholder="月" maxlength="2">' +
+      '<span class="deadline-sep">/</span>' +
+      '<input type="text" id="jobDeadlineDay" inputmode="numeric" autocomplete="off" placeholder="日" maxlength="2">';
+
+    hidden.insertAdjacentElement('afterend', wrap);
+
+    var monthInput = document.getElementById('jobDeadlineMonth');
+    var dayInput = document.getElementById('jobDeadlineDay');
+    var next = document.getElementById('jobWorker');
+    monthInput.value = mm0;
+    dayInput.value = dd0;
+
+    clampPart(monthInput, 12);
+    clampPart(dayInput, 31);
+    bindEnterNav(monthInput, dayInput);
+    bindEnterNav(dayInput, next);
+
+    [monthInput, dayInput].forEach(function(input) {
+      input.addEventListener('input', function() {
+        syncHidden(hidden, monthInput, dayInput);
+      });
+      input.addEventListener('blur', function() {
+        syncHidden(hidden, monthInput, dayInput);
+      });
+    });
+
+    if (!hidden.value) {
+      monthInput.value = '';
+      dayInput.value = '';
+    } else {
+      syncHidden(hidden, monthInput, dayInput);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
   }
 })();
