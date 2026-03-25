@@ -1469,9 +1469,9 @@ input:focus,select:focus,textarea:focus{
   border:1px solid #d4d4dc;
   color:#2a2a3e;
   border-radius:var(--r-sm);
-  padding:8px 12px;
+  padding:7px 12px;
   box-sizing:border-box;
-  min-height:40px;
+  min-height:38px;
 }
 .deadline-sep{
   font-size:12px;

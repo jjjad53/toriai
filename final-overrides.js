@@ -167,6 +167,8 @@ function getRemnants() {
 function cleanCartChrome() {
   var cartTitle = document.querySelector('#cartModal .cart-modal-hd span[style*="font-size:15px"]');
   if (cartTitle) cartTitle.textContent = '印刷カート';
+  var cartIcon = document.querySelector('#cartModal .cart-modal-hd span[style*="font-size:16px"]');
+  if (cartIcon) cartIcon.remove();
 
   var printBtn = document.querySelector('#cartModal button[onclick="cartDoPrint()"]');
   if (printBtn) printBtn.textContent = 'まとめて印刷';
