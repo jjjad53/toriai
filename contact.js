@@ -8,49 +8,6 @@ function getContactFormPayload() {
   };
 }
 
-function submitContactForm(event) {
-  if (event) event.preventDefault();
-
-  var payload = getContactFormPayload();
-  if (!payload.name || !payload.subject || !payload.message) {
-    showContactStatus('すべての項目を入力してください。', 'error');
-    return;
-  }
-
-  if (!GAS_URL || GAS_URL === 'YOUR_GAS_URL_HERE') {
-    showContactStatus('お問い合わせ送信先が設定されていません。', 'error');
-    return;
-  }
-
-  var submitBtn = document.getElementById('contactSubmitBtn');
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.textContent = '送信中...';
-  }
-  showContactStatus('送信しています。しばらくお待ちください。', 'info');
-
-  fetch(GAS_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-    .then(function() {
-      showContactStatus('送信しました。ご意見ありがとうございます。', 'success');
-      var form = document.getElementById('contactForm');
-      if (form) form.reset();
-    })
-    .catch(function(err) {
-      console.error('Contact form error:', err);
-      showContactStatus('送信に失敗しました。時間をおいて再度お試しください。', 'error');
-    })
-    .finally(function() {
-      if (!submitBtn) return;
-      submitBtn.disabled = false;
-      submitBtn.textContent = '送信する';
-    });
-}
-
 function showContactStatus(msg, type) {
   var el = document.getElementById('contactStatus');
   if (!el) return;
@@ -73,6 +30,74 @@ function showContactStatus(msg, type) {
   el.style.background = '#f8f8fc';
   el.style.border = '1px solid #e0e0ea';
   el.style.color = '#5a5a78';
+}
+
+function setContactSubmitting(isSubmitting) {
+  var submitBtn = document.getElementById('contactSubmitBtn');
+  if (!submitBtn) return;
+  submitBtn.disabled = !!isSubmitting;
+  submitBtn.textContent = isSubmitting ? '送信中...' : '送信する';
+}
+
+function submitContactForm(event) {
+  if (event) event.preventDefault();
+
+  var payload = getContactFormPayload();
+  if (!payload.name || !payload.subject || !payload.message) {
+    showContactStatus('すべての項目を入力してください。', 'error');
+    return;
+  }
+  if (!GAS_URL || GAS_URL === 'YOUR_GAS_URL_HERE') {
+    showContactStatus('お問い合わせ送信先が設定されていません。', 'error');
+    return;
+  }
+
+  setContactSubmitting(true);
+  showContactStatus('送信しています。しばらくお待ちください。', 'info');
+
+  var callbackName = '__toriaiContactCallback_' + Date.now();
+  var cleanup = function() {
+    try { delete window[callbackName]; } catch (_) {}
+    var script = document.getElementById(callbackName);
+    if (script && script.parentNode) script.parentNode.removeChild(script);
+  };
+
+  var timeout = setTimeout(function() {
+    cleanup();
+    setContactSubmitting(false);
+    showContactStatus('送信に失敗しました。Apps Script の再デプロイ状態をご確認ください。', 'error');
+  }, 12000);
+
+  window[callbackName] = function(result) {
+    clearTimeout(timeout);
+    cleanup();
+    setContactSubmitting(false);
+    if (!result || result.status !== 'ok') {
+      showContactStatus('送信に失敗しました。もう一度お試しください。', 'error');
+      return;
+    }
+    showContactStatus('送信しました。ご意見ありがとうございます。', 'success');
+    var form = document.getElementById('contactForm');
+    if (form) form.reset();
+  };
+
+  var params = [
+    'callback=' + encodeURIComponent(callbackName),
+    'name=' + encodeURIComponent(payload.name),
+    'subject=' + encodeURIComponent(payload.subject),
+    'message=' + encodeURIComponent(payload.message)
+  ];
+
+  var script = document.createElement('script');
+  script.id = callbackName;
+  script.src = GAS_URL + '?' + params.join('&');
+  script.onerror = function() {
+    clearTimeout(timeout);
+    cleanup();
+    setContactSubmitting(false);
+    showContactStatus('送信に失敗しました。接続状態をご確認ください。', 'error');
+  };
+  document.body.appendChild(script);
 }
 
 (function styleContactUi() {
