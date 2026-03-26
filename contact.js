@@ -1,4 +1,4 @@
-var GAS_URL = 'https://script.google.com/macros/s/AKfycby0sGxXqDuSagHSiwapu38yRhtjnE7THRKp4lLiR8E0aAkLnxuXuy0i1t1hFq6NVAQMIg/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxong6lJv7SjwrknyqUmFPDG9hPR2Rj9Waof0zDtrhgZNcv6oEk-kqO8jgBg-LFLfLo/exec';
 
 function getContactFormPayload() {
   return {
