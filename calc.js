@@ -539,7 +539,7 @@ function calcChargeMin(pieces, stocks, blade, endLoss, kgm) {
 function runCalc() {
   showCalcLoadingOverlay();
   var btn = document.getElementById('runBtn');
-  btn.innerHTML = '<span class="sp"></span> 計算中...';
+  btn.innerHTML = '<span class="calc-run-pizza" aria-hidden="true"></span> 計算中...';
   btn.disabled = true;
   if (typeof _lastRegisteredRemnantSignature !== 'undefined') _lastRegisteredRemnantSignature = '';
   savePiecesHistory();
@@ -920,29 +920,15 @@ function scheduleCalcIdle(callback) {
 }
 
 function ensureCalcLoadingOverlay() {
-  var overlay = document.getElementById('calcLoadingOverlay');
-  if (overlay) return overlay;
-  overlay = document.createElement('div');
-  overlay.id = 'calcLoadingOverlay';
-  overlay.className = 'calc-loading-overlay';
-  overlay.innerHTML =
-    '<div class="calc-loading-card">' +
-      '<div class="calc-loading-pizza" aria-hidden="true">🍕</div>' +
-      '<div class="calc-loading-spinner" aria-hidden="true"></div>' +
-      '<div class="calc-loading-title">計算中です</div>' +
-      '<div class="calc-loading-sub">取り合いパターンを整理しています...</div>' +
-    '</div>';
-  document.body.appendChild(overlay);
-  return overlay;
+  return null;
 }
 
 function showCalcLoadingOverlay() {
-  ensureCalcLoadingOverlay().classList.add('show');
+  return;
 }
 
 function hideCalcLoadingOverlay() {
-  var overlay = document.getElementById('calcLoadingOverlay');
-  if (overlay) overlay.classList.remove('show');
+  return;
 }
 
 function createCalcWorker() {
@@ -1032,7 +1018,7 @@ function applyWorkerResults(results, stocks, minValidLen, endLoss, kgm) {
 function runCalc() {
   showCalcLoadingOverlay();
   var btn = document.getElementById('runBtn');
-  btn.innerHTML = '<span class="sp"></span> 計算中...';
+  btn.innerHTML = '<span class="calc-run-pizza" aria-hidden="true"></span> 計算中...';
   btn.disabled = true;
   if (typeof _lastRegisteredRemnantSignature !== 'undefined') _lastRegisteredRemnantSignature = '';
   savePiecesHistory();
