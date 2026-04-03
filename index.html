@@ -428,8 +428,11 @@
         </div>
         <input type="hidden" id="wKgm">
         <div class="field">
-          <label>部材名・メモ（任意）</label>
-          <input type="text" id="wMemo" placeholder="例：柱材、梁材、胴縁など" maxlength="40">
+          <label style="display:flex;align-items:center;justify-content:space-between">
+            <span>部材名・メモ（任意）</span>
+            <span id="wMemoCheck" style="color:#16a34a;font-weight:700;font-size:13px;opacity:0;transition:opacity .2s">✓</span>
+          </label>
+          <input type="text" id="wMemo" placeholder="例：柱材、梁材、胴縁など" maxlength="40" oninput="document.getElementById('wMemoCheck').style.opacity=this.value.trim()?'1':'0'">
         </div>
       </section>
       <section id="wPreviewBox" style="display:none;background:#f4f4fa;border-radius:10px;padding:12px;font-size:12px">
@@ -454,17 +457,11 @@
           <span id="wPrevPrice" style="font-weight:700;color:#16a34a">—</span>
         </div>
       </section>
-      <button onclick="wAddRow()" style="background:#6d28d9;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:4px">
+      <button onclick="wAddRow()" style="width:100%;background:#fff;color:#1a1a2e;border:1.5px solid #d4d4dc;border-radius:var(--r,8px);font-family:'Space Grotesk','Noto Sans JP',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:all .2s;margin-top:4px">
         ＋ リストに追加
       </button>
-      <button onclick="wClearAll()" style="background:transparent;color:#aaa;border:1px solid #ddd;border-radius:10px;padding:7px;font-size:11px;font-weight:600;cursor:pointer;width:100%;margin-top:6px">
+      <button onclick="wClearAll()" class="sm-btn del" style="width:100%;margin-top:6px;padding:7px">
         リストをクリア
-      </button>
-      <button onclick="wAddToCart()" id="wCartBtn" style="display:none;background:#16a34a;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:4px">
-        ＋ カートに追加
-      </button>
-      <button onclick="wPrint()" id="wPrintBtn" style="display:none;background:transparent;color:#6d28d9;border:1.5px solid #6d28d9;border-radius:10px;padding:7px;font-size:11px;font-weight:600;cursor:pointer;width:100%;margin-top:6px">
-        🖨️ 印刷する
       </button>
       <p style="font-size:10px;color:#aaaabc;margin-top:6px">
         ※ 重量は JIS kg/m × 長さ。塗装面積は断面周長 × 長さ（概算値）。
@@ -474,6 +471,11 @@
       <div id="wEmpty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:#c0c0d0;gap:12px;min-height:300px">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".35"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2 2"/></svg>
         <p style="font-size:13px">左の入力欄で設定して「リストに追加」を押してください</p>
+      </div>
+      <div id="wMainHd" style="display:none;padding:8px 12px 6px;justify-content:flex-end;align-items:center;border-bottom:1px solid #ebebf0">
+        <button id="wCartBtn" onclick="wAddToCart()" class="cc-btn-add">
+          ＋ 作業指示書に追加
+        </button>
       </div>
       <div id="wTableWrap" style="display:none;overflow-x:auto">
         <table id="wTable" style="width:100%;border-collapse:collapse;font-size:12px;min-width:700px">

@@ -233,6 +233,8 @@ function wAddRow() {
   });
 
   if (memoEl) memoEl.value = '';
+  var memoCheck = document.getElementById('wMemoCheck');
+  if (memoCheck) memoCheck.style.opacity = '0';
   wRenderRows();
   lenEl.focus();
   lenEl.select();
@@ -255,8 +257,8 @@ function wRenderRows() {
   var tableWrap = document.getElementById('wTableWrap');
   var tbody = document.getElementById('wTbody');
   var tfoot = document.getElementById('wTfoot');
-  var printBtn = document.getElementById('wPrintBtn');
   var cartBtn = document.getElementById('wCartBtn');
+  var mainHd = document.getElementById('wMainHd');
   var sumBox = document.getElementById('wSumBox');
   var sumKgEl = document.getElementById('wSumKg');
   var sumM2El = document.getElementById('wSumM2');
@@ -267,15 +269,16 @@ function wRenderRows() {
   if (_wRows.length === 0) {
     empty.style.display = 'flex';
     tableWrap.style.display = 'none';
-    if (printBtn) printBtn.style.display = 'none';
     if (cartBtn) cartBtn.style.display = 'none';
+    if (mainHd) mainHd.style.display = 'none';
     if (sumBox) sumBox.style.display = 'none';
     return;
   }
   empty.style.display = 'none';
   tableWrap.style.display = 'block';
-  if (printBtn) printBtn.style.display = 'block';
-  if (cartBtn) cartBtn.style.display = 'block';
+  var show = _wRows.length > 0;
+  if (cartBtn) cartBtn.style.display = show ? '' : 'none';
+  if (mainHd) mainHd.style.display = show ? 'flex' : 'none';
 
   var anyPrice = _wRows.some(function(r) { return r.amount !== null; });
   var sumKg = 0;
@@ -434,15 +437,14 @@ function wAddToCart() {
 
     var btn = document.getElementById('wCartBtn');
     if (btn) {
-      var orig = btn.textContent;
-      btn.textContent = '✓ カートに追加しました';
+      btn.textContent = '✓ 追加済み';
+      btn.classList.add('added');
       btn.disabled = true;
-      btn.style.background = '#15803d';
       setTimeout(function() {
-        btn.textContent = orig;
+        btn.textContent = '＋ 作業指示書に追加';
+        btn.classList.remove('added');
         btn.disabled = false;
-        btn.style.background = '#16a34a';
-      }, 2000);
+      }, 2500);
     }
   }
 }
