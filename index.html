@@ -1,27 +1,19 @@
 <!DOCTYPE html>
-<!-- saved from url=(0041)file:///C:/Users/c3pob/Desktop/index.html -->
-<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#111111">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="鋼材最適化">
-<link rel="manifest" href="file:///C:/Users/c3pob/Desktop/manifest.json">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="鋼材計算">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>TORIAI β</title>
-<link href="./STEEL.OPTIMIZER β_files/css2" rel="stylesheet">
-
-  <link rel="stylesheet" href="style.css">
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#111111">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="鋼材計算">
-  <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-512.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -32,6 +24,7 @@
   <nav>
     <a id="na" class="" onclick="goPage(&#39;c&#39;)">計算</a>
     <a id="nhi" onclick="goPage(&#39;hi&#39;);hiSwitch(&#39;h&#39;)" class="active">履歴・在庫</a>
+    <a id="nw" onclick="goPage(&#39;w&#39;)">重量</a>
     <a id="nc" onclick="goPage(&#39;contact&#39;)" class="">お問い合わせ</a>
     <button id="cartBadge" class="cart-badge empty" onclick="openCartModal()">🛒 0件</button>
   </nav>
@@ -389,6 +382,99 @@
 </div>
 <!-- /cop -->
 
+<!-- 重量シミュレーター -->
+<div id="wpp" class="pg">
+  <div class="layout">
+    <aside class="sb">
+      <section>
+        <div class="shd">鋼材種類</div>
+        <select id="wKind" onchange="wOnKind()"></select>
+      </section>
+      <section>
+        <div class="shd">規格</div>
+        <select id="wSpec" onchange="wOnSpec()"></select>
+        <div id="wKgmDisp" style="font-size:11px;color:#8888a8;margin-top:6px"></div>
+      </section>
+      <section>
+        <div class="field">
+          <label>長さ (mm)</label>
+          <input type="number" id="wLen" value="6000" min="1">
+        </div>
+        <div class="field">
+          <label>本数</label>
+          <input type="number" id="wQty" value="1" min="1">
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:6px">
+            <input type="checkbox" id="wPriceOn" onchange="wTogglePrice()">
+            単価 (円/kg) を入力する
+          </label>
+          <input type="number" id="wPrice" placeholder="例：120" min="0" disabled style="opacity:.4">
+        </div>
+        <div class="field">
+          <label>kg/m（手動変更可）</label>
+          <input type="number" id="wKgm" step="0.01" min="0.01">
+        </div>
+      </section>
+      <section id="wPreviewBox" style="display:none;background:#f4f4fa;border-radius:10px;padding:12px;font-size:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="color:#5a5a78">1本重量</span>
+          <span id="wPrev1kg" style="font-weight:700;color:#1a1a2e">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="color:#5a5a78">合計重量</span>
+          <span id="wPrevTotalKg" style="font-weight:700;color:#6d28d9">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="color:#5a5a78">塗装面積(合計)</span>
+          <span id="wPrevTotalM2" style="font-weight:700;color:#0891b2">—</span>
+        </div>
+        <div id="wPrevPriceRow" style="display:none;justify-content:space-between">
+          <span style="color:#5a5a78">概算金額</span>
+          <span id="wPrevPrice" style="font-weight:700;color:#16a34a">—</span>
+        </div>
+      </section>
+      <button onclick="wAddRow()" style="background:#6d28d9;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:4px">
+        ＋ リストに追加
+      </button>
+      <button onclick="wClearAll()" style="background:transparent;color:#aaa;border:1px solid #ddd;border-radius:10px;padding:7px;font-size:11px;font-weight:600;cursor:pointer;width:100%;margin-top:6px">
+        リストをクリア
+      </button>
+      <p style="font-size:10px;color:#aaaabc;margin-top:6px">
+        ※ 重量は JIS kg/m × 長さ。塗装面積は断面周長 × 長さ（概算値）。
+      </p>
+    </aside>
+    <main class="mn" id="wMain">
+      <div id="wEmpty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:#c0c0d0;gap:12px;min-height:300px">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".35"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2 2"/></svg>
+        <p style="font-size:13px">左の入力欄で設定して「リストに追加」を押してください</p>
+      </div>
+      <div id="wTableWrap" style="display:none;overflow-x:auto">
+        <table id="wTable" style="width:100%;border-collapse:collapse;font-size:12px;min-width:700px">
+          <thead>
+            <tr style="background:#f4f4fa;border-bottom:2px solid #e0e0ea">
+              <th style="padding:8px 10px;text-align:left;font-size:10px;color:#5a5a78">#</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;color:#5a5a78">種類</th>
+              <th style="padding:8px 10px;text-align:left;font-size:10px;color:#5a5a78">規格</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;color:#5a5a78">長さ(mm)</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;color:#5a5a78">本数</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;color:#5a5a78">kg/m</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;color:#5a5a78">1本重量(kg)</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;color:#6d28d9;font-weight:700">合計重量(kg)</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;color:#0891b2">塗装1本(m2)</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;color:#0891b2;font-weight:700">塗装合計(m2)</th>
+              <th style="padding:8px 10px;text-align:right;font-size:10px;color:#16a34a">概算金額(円)</th>
+              <th style="padding:8px 6px;width:28px"></th>
+            </tr>
+          </thead>
+          <tbody id="wTbody"></tbody>
+          <tfoot id="wTfoot"></tfoot>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
 <!-- 切断履歴プレビューモーダル -->
 <div id="histPreviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;overflow:auto;padding:16px 12px;box-sizing:border-box">
   <div style="max-width:1100px;min-width:700px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">
@@ -415,6 +501,7 @@
   <script src="main.js"></script>
   <script src="contact.js"></script>
   <script src="final-overrides.js"></script>
+  <script src="weight.js"></script>
 
 <!-- 🛒 カートモーダル -->
 <div id="cartModal">
