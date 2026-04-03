@@ -90,23 +90,33 @@ function goPage(p) {
   });
 
   if (p === 'c') {
-    document.getElementById('cp').classList.add('show');
-    document.getElementById('na').classList.add('active');
+    var cp = document.getElementById('cp');
+    var na = document.getElementById('na');
+    if (cp) cp.classList.add('show');
+    if (na) na.classList.add('active');
   } else if (p === 'w') {
-    document.getElementById('wpp').classList.add('show');
-    document.getElementById('nw').classList.add('active');
+    var wpp = document.getElementById('wpp');
+    var nw = document.getElementById('nw');
+    if (wpp) wpp.classList.add('show');
+    if (nw) nw.classList.add('active');
     if (typeof wInit === 'function') wInit();
   } else if (p === 'contact') {
     var cop = document.getElementById('cop');
     if (cop) cop.classList.add('show');
   } else {
-    document.getElementById('hip').classList.add('show');
-    document.getElementById('nhi').classList.add('active');
+    var hip = document.getElementById('hip');
+    var nhi = document.getElementById('nhi');
+    if (hip) hip.classList.add('show');
+    if (nhi) nhi.classList.add('active');
     var showH = (p !== 'i');
-    document.getElementById('hiPanelH').style.display = showH ? 'block' : 'none';
-    document.getElementById('hiPanelI').style.display = showH ? 'none' : 'block';
-    document.getElementById('hiTabH').classList.toggle('hi-tab-active', showH);
-    document.getElementById('hiTabI').classList.toggle('hi-tab-active', !showH);
+    var hiPanelH = document.getElementById('hiPanelH');
+    var hiPanelI = document.getElementById('hiPanelI');
+    var hiTabH = document.getElementById('hiTabH');
+    var hiTabI = document.getElementById('hiTabI');
+    if (hiPanelH) hiPanelH.style.display = showH ? 'block' : 'none';
+    if (hiPanelI) hiPanelI.style.display = showH ? 'none' : 'block';
+    if (hiTabH) hiTabH.classList.toggle('hi-tab-active', showH);
+    if (hiTabI) hiTabI.classList.toggle('hi-tab-active', !showH);
     if (showH) { buildHistSpecDropdown(); renderHistory(); }
     else { buildInvFilterKind(); renderInventoryPage(); }
   }
@@ -424,13 +434,13 @@ function updKg() {
     var el = document.getElementById('pk' + i);
     if (l > 0 && q > 0) {
       var kg = (l / 1000) * kgm * q;
-      el.textContent = kg.toFixed(2) + 'kg';
+      el.textContent = Math.round(kg) + 'kg';
       tot += kg;
     } else {
       el.textContent = '—';
     }
   }
-  document.getElementById('totkg').textContent = tot > 0 ? tot.toFixed(2) + ' kg' : '—';
+  document.getElementById('totkg').textContent = tot > 0 ? Math.round(tot) + ' kg' : '—';
 }
 
 // ============================================================
@@ -1446,8 +1456,8 @@ function render(single, top3, chgPlans, endLoss, remnantBars, kgm, allDP, origPi
           '<div class="cc-stats" style="margin-left:auto">' +
             '<div class="cs"><div class="cl">歩留まり</div><div class="cv">' + yld2 + ' %</div></div>' +
             '<div class="cs"><div class="cl">カット数</div><div class="cv">' + (yb.chg || '—') + ' 回</div></div>' +
-            '<div class="cs"><div class="cl">母材重量</div><div class="cv">' + yb.barKg.toFixed(2) + ' kg</div></div>' +
-            '<div class="cs"><div class="cl">ロス重量</div><div class="cv">' + yb.lossKg.toFixed(2) + ' kg</div></div>' +
+            '<div class="cs"><div class="cl">母材重量</div><div class="cv">' + Math.round(yb.barKg) + ' kg</div></div>' +
+            '<div class="cs"><div class="cl">ロス重量</div><div class="cv">' + Math.round(yb.lossKg) + ' kg</div></div>' +
             '<div class="cs"><div class="cl">使用本数</div><div class="cv">' + barCount + ' 本</div></div>' +
           '</div>' +
           '<div class="cc-btns">' + '<button class="cc-btn-add" id="add_' + yCardId2 + '" onclick="cartAdd(\'' + yCardId2 + '\',this)">＋ 作業指示書に追加</button>' + '</div>' +
@@ -1616,8 +1626,8 @@ function render(single, top3, chgPlans, endLoss, remnantBars, kgm, allDP, origPi
             '<div class="cs"><div class="cl">同一パターン</div><div class="cv">' + m.samePatternCount + ' 本</div></div>' +
             '<div class="cs"><div class="cl">歩留まり</div><div class="cv">' + m.yieldPct.toFixed(1) + ' %</div></div>' +
             '<div class="cs"><div class="cl">カット数</div><div class="cv">' + m.totalCuts + ' 回</div></div>' +
-            '<div class="cs"><div class="cl">母材重量</div><div class="cv">' + (m.barKg||0).toFixed(2) + ' kg</div></div>' +
-            '<div class="cs"><div class="cl">ロス重量</div><div class="cv">' + (m.lossKg||0).toFixed(2) + ' kg</div></div>' +
+            '<div class="cs"><div class="cl">母材重量</div><div class="cv">' + Math.round(m.barKg||0) + ' kg</div></div>' +
+            '<div class="cs"><div class="cl">ロス重量</div><div class="cv">' + Math.round(m.lossKg||0) + ' kg</div></div>' +
             '<div class="cs"><div class="cl">使用本数</div><div class="cv">' + m.barCount + ' 本</div></div>' +
           '</div>' +
           '<div class="cc-btns">' + '<button class="cc-btn-add" id="add_' + cardId2 + '" onclick="cartAdd(\'' + cardId2 + '\',this)">＋ 作業指示書に追加</button>' + '</div>' +

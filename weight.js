@@ -169,8 +169,8 @@ function wPreview() {
   var m2Total = ppm * len / 1000 * qty;
 
   box.style.display = 'block';
-  document.getElementById('wPrev1kg').textContent = _wFmt(kg1, 2) + ' kg';
-  document.getElementById('wPrevTotalKg').textContent = _wFmt(kgTotal, 2) + ' kg';
+  document.getElementById('wPrev1kg').textContent = _wFmt(kg1, 0) + ' kg';
+  document.getElementById('wPrevTotalKg').textContent = _wFmt(kgTotal, 0) + ' kg';
   document.getElementById('wPrevTotalM2').textContent = _wFmt(m2Total, 2) + ' m2';
 
   var priceRow = document.getElementById('wPrevPriceRow');
@@ -276,8 +276,8 @@ function wRenderRows() {
       '<td style="' + _tdR + '">' + r.len.toLocaleString() + '</td>' +
       '<td style="' + _tdR + '">' + r.qty.toLocaleString() + '</td>' +
       '<td style="' + _tdR + 'color:#8888a8">' + r.kgm + '</td>' +
-      '<td style="' + _tdR + '">' + _wFmt(r.kg1, 2) + '</td>' +
-      '<td style="' + _tdR + 'color:#6d28d9;font-weight:700">' + _wFmt(r.kgTotal, 2) + '</td>' +
+      '<td style="' + _tdR + '">' + _wFmt(r.kg1, 0) + '</td>' +
+      '<td style="' + _tdR + 'color:#6d28d9;font-weight:700">' + _wFmt(r.kgTotal, 0) + '</td>' +
       '<td style="' + _tdR + 'color:#0891b2">' + _wFmt(r.m2_1, 2) + '</td>' +
       '<td style="' + _tdR + 'color:#0891b2;font-weight:700">' + _wFmt(r.m2Total, 2) + '</td>' +
       amtCell +
@@ -298,7 +298,7 @@ function wRenderRows() {
     '<tr style="background:#f4f4fa;border-top:2px solid #e0e0ea">' +
     '<td colspan="6" style="padding:10px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#5a5a78">\u5408\u3000\u8a08</td>' +
     '<td style="' + _tdR + 'color:#5a5a78">\u2014</td>' +
-    '<td style="' + _tdR + 'color:#6d28d9;font-weight:800;font-size:14px">' + _wFmt(sumKg, 2) + ' kg</td>' +
+    '<td style="' + _tdR + 'color:#6d28d9;font-weight:800;font-size:14px">' + _wFmt(sumKg, 0) + ' kg</td>' +
     '<td style="' + _tdR + 'color:#8888a8">\u2014</td>' +
     '<td style="' + _tdR + 'color:#0891b2;font-weight:800;font-size:14px">' + _wFmt(sumM2, 2) + ' m2</td>' +
     totalAmtCell +
