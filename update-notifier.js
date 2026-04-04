@@ -1,8 +1,10 @@
 (function() {
   var banner = document.createElement('div');
   banner.id = 'updateBanner';
-  banner.style.cssText = 'display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#ede9fe;color:#4c1d95;padding:12px 20px;border-radius:10px;border:1.5px solid #6d28d9;z-index:9999;align-items:center;gap:12px;font-family:Space Grotesk,Noto Sans JP,sans-serif;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(109,40,217,.2);';
-  banner.innerHTML = '<span>\uD83D\uDD04 \u65B0\u3057\u3044\u66F4\u65B0\u304C\u3042\u308A\u307E\u3059</span><button onclick="doUpdate()" style="background:#6d28d9;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">\u66F4\u65B0\u3059\u308B</button>';
+  banner.style.cssText = 'display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#fff;color:#4c1d95;padding:12px 20px;border-radius:10px;border:1.5px solid #6d28d9;z-index:9999;align-items:center;gap:12px;font-family:Space Grotesk,Noto Sans JP,sans-serif;font-size:13px;font-weight:600;box-shadow:0 4px 20px rgba(109,40,217,.2);transition:background .2s;cursor:default;';
+  banner.addEventListener('mouseenter', function(){ this.style.background='#ede9fe'; });
+  banner.addEventListener('mouseleave', function(){ this.style.background='#fff'; });
+  banner.innerHTML = '<span>\uD83D\uDD04 \u65B0\u3057\u3044\u66F4\u65B0\u304C\u3042\u308A\u307E\u3059</span><button onclick="doUpdate()" style="background:#6d28d9;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;box-shadow:0 3px 0 #4c1d95;" onmousedown="this.style.transform=\'translateY(2px)\';this.style.boxShadow=\'0 1px 0 #4c1d95\';" onmouseup="this.style.transform=\'\';this.style.boxShadow=\'0 3px 0 #4c1d95\';" onmouseleave="this.style.transform=\'\';this.style.boxShadow=\'0 3px 0 #4c1d95\';">\u66F4\u65B0\u3059\u308B</button>';
   document.body.appendChild(banner);
 
   var _swReg = null;
