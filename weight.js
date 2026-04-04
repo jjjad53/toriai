@@ -24,14 +24,6 @@ function wInit() {
   wRenderRows();
 
   // メモ入力チェックマーク
-  var memoEl = document.getElementById('wMemo');
-  if (memoEl && !memoEl.dataset.wired) {
-    memoEl.addEventListener('input', function() {
-      var check = document.getElementById('wMemoCheck');
-      if (check) check.style.opacity = this.value.trim() ? '1' : '0';
-    });
-    memoEl.dataset.wired = '1';
-  }
 }
 
 function wSetupEnter() {

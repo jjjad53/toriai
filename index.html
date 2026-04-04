@@ -430,11 +430,14 @@
         </div>
         <input type="hidden" id="wKgm">
         <div class="field">
-          <label style="display:flex;align-items:center;justify-content:space-between">
-            <span>部材名・メモ（任意）</span>
-            <span id="wMemoCheck" style="color:#16a34a;font-weight:700;font-size:13px;opacity:0;transition:opacity .2s">✓</span>
+          <label style="font-size:12px;font-weight:600;color:#5a5a78;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+            部材名・メモ（任意）
+            <span id="wMemoCheck" style="color:#16a34a;font-size:14px;font-weight:700;opacity:0;transition:opacity .15s;">✓</span>
           </label>
-          <input type="text" id="wMemo" placeholder="例：柱材、梁材、胴縁など" maxlength="40">
+          <textarea id="wMemo" rows="2" placeholder="例：柱材、梁材、胴縁など"
+            style="width:100%;box-sizing:border-box;border:1.5px solid #d4d4dc;border-radius:8px;padding:8px 10px;font-size:13px;font-family:'Noto Sans JP',sans-serif;resize:none;"
+            oninput="(function(el){var c=document.getElementById('wMemoCheck');if(c)c.style.opacity=el.value.trim()?'1':'0';})(this)"
+          ></textarea>
         </div>
       </section>
       <button onclick="wAddRow()" class="run" style="margin-top:6px">
