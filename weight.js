@@ -202,8 +202,6 @@ function wAddRow() {
   });
 
   if (memoEl) memoEl.value = '';
-  var memoCheck = document.getElementById('wMemoCheck');
-  if (memoCheck) memoCheck.style.opacity = '0';
   wRenderRows();
   lenEl.focus();
   lenEl.select();
