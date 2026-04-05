@@ -1,12 +1,13 @@
-// ⚠️ 重要: index.html・js・cssなど何かファイルを変更してpushする際は、
-// 必ずこのCACHE_NAMEの末尾の文字や数字を変えること。
-// 例: toriai-20260405a → toriai-20260405b
-// これをしないと更新バナーがユーザーに表示されない。
+// ⚠️ 重要: 何かファイルを変更してpushする際は必ずCACHE_NAMEの末尾を変えること
 const CACHE_NAME = 'toriai-20260405a';
-const ASSETS = ['./', './index.html', './style.css', './main.js', './calc.js', './storage.js', './weight.js', './final-overrides.js', './update-notifier.js'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(c => {
+      const urls = ['./', './index.html', './style.css', './main.js', './calc.js', './storage.js', './weight.js', './final-overrides.js', './update-notifier.js'];
+      return Promise.allSettled(urls.map(url => c.add(url)));
+    })
+  );
 });
 
 self.addEventListener('activate', e => {
@@ -19,7 +20,7 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+    caches.match(e.request).then(r => r || fetch(e.request).catch(() => new Response('', {status: 503})))
   );
 });
 
