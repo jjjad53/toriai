@@ -49,6 +49,25 @@
     btn.disabled = !(sel && sel.value);
   }
 
+  function applyInvButtonPressStyle(btn) {
+    if (!btn || btn.dataset.pressStyled) return;
+    btn.dataset.pressStyled = '1';
+    btn.style.transition = 'all .15s';
+    btn.style.boxShadow = '0 3px 0 #15803d';
+    btn.onmousedown = function() {
+      this.style.transform = 'translateY(2px)';
+      this.style.boxShadow = '0 1px 0 #15803d';
+    };
+    btn.onmouseup = function() {
+      this.style.transform = '';
+      this.style.boxShadow = '0 3px 0 #15803d';
+    };
+    btn.onmouseleave = function() {
+      this.style.transform = '';
+      this.style.boxShadow = '0 3px 0 #15803d';
+    };
+  }
+
   updateInventoryUseButton = function(forceReady) {
     var btn = document.getElementById('invUseBtn');
     if (!btn) return;
@@ -127,10 +146,12 @@
       }
     });
     if (!list.children.length) {
-      list.innerHTML = '<div class="rem-row rem-row-empty"><div class="rem-meta">\u5728\u5EAB\u304B\u3089\u8FFD\u52A0\u3057\u305F\u6B8B\u6750\u304C\u3053\u3053\u306B\u8868\u793A\u3055\u308C\u307E\u3059</div></div>';
+      list.innerHTML = '';
+      list.style.display = 'none';
       updateInventoryUseButton();
       return;
     }
+    list.style.display = '';
     var sel = document.getElementById('invSelect');
     if (sel && !sel.value) updateInventoryUseButton(true);
     else updateInventoryUseButton();
@@ -150,7 +171,10 @@
   function bindRemnantFixes() {
     var btn = document.getElementById('invUseBtn');
     var sel = document.getElementById('invSelect');
-    if (btn) btn.onclick = addFromInventory;
+    if (btn) {
+      applyInvButtonPressStyle(btn);
+      btn.onclick = addFromInventory;
+    }
     if (sel) sel.onchange = function() { updateInventoryUseButton(); };
   }
 
